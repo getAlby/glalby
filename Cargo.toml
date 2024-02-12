@@ -1,0 +1,36 @@
+[package]
+name = "glalby"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "glalby-temp"
+path = "glalby-temp.rs"
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "uniffi-bindgen.rs"
+
+[lib]
+name = "glalby_bindings"
+crate-type = ["staticlib", "cdylib", "lib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gl-client = { git = "ssh://git@github.com/Blockstream/greenlight" }
+rand = "*"
+bip39 = { version = "*", features=["rand_core"] }
+tokio = { version = "1", features = ["full"] }
+hex = "0.4"
+uniffi_macros = "0.25.0"
+uniffi_bindgen = "0.25.0"
+uniffi = { version = "0.25.0", features = ["cli"] }
+
+[build-dependencies]
+#uniffi = { version = "0.25.0", features = ["build"] }
+uniffi_build = { version = "0.25.0" }
+uniffi_bindgen = "0.25.0"
+
+[dev-dependencies]
+uniffi = { version = "0.25.0", features = ["bindgen-tests"] }
