@@ -1,3 +1,4 @@
 namespace glalby {
   boolean equal(u64 a, u64 b);
+  string get_info(string mnemonic);
 };
