@@ -8,5 +8,5 @@ fn main() {
     let client = new_blocking_greenlight_alby_client(mnemonic, credentials);
     let result = client.get_info();
 
-    println!("Result: {}", result);
+    println!("Result: {:?}", result);
 }

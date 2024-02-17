@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 mod greenlight_alby_client;
 use greenlight_alby_client::{
-    new_greenlight_alby_client, GreenlightAlbyClient, GreenlightCredentials,
+    new_greenlight_alby_client, GreenlightAlbyClient, GreenlightCredentials, GreenlightNodeInfo,
 };
 
 use once_cell::sync::Lazy;
@@ -14,7 +14,7 @@ pub struct BlockingGreenlightAlbyClient {
 
 impl BlockingGreenlightAlbyClient {
     // TODO: change return type, add error handling
-    pub fn get_info(&self) -> String {
+    pub fn get_info(&self) -> GreenlightNodeInfo {
         rt().block_on(self.greenlight_alby_client.get_info())
     }
 

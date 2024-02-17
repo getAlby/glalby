@@ -15,6 +15,25 @@ pub struct GreenlightCredentials {
     pub device_key: String,
 }
 
+#[derive(Clone, Debug)]
+pub struct GreenlightNodeInfo {
+    pub alias: String,
+    pub color: String,
+    pub network: String,
+    pub block_height: u32,
+}
+
+impl From<cln::GetinfoResponse> for GreenlightNodeInfo {
+    fn from(info: cln::GetinfoResponse) -> Self {
+        GreenlightNodeInfo {
+            alias: info.alias.unwrap_or_default(),
+            color: hex::encode(info.color),
+            network: info.network,
+            block_height: info.blockheight,
+        }
+    }
+}
+
 pub struct GreenlightAlbyClient {
     // signer: gl_client::signer::Signer,
     scheduler: gl_client::scheduler::Scheduler,
@@ -74,7 +93,7 @@ impl GreenlightAlbyClient {
         return node;
     }
 
-    pub async fn get_info(&self) -> String {
+    pub async fn get_info(&self) -> GreenlightNodeInfo {
         let mut node = self.get_node().await;
 
         // TODO: error handling, response handling
@@ -83,10 +102,8 @@ impl GreenlightAlbyClient {
             .await
             .unwrap()
             .into_inner();
-        let pubkey = hex::encode(info.id);
 
-        println!("{}", pubkey);
-        return pubkey;
+        info.into()
     }
 
     // TODO: change request, response type, add error handling

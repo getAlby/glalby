@@ -3,9 +3,16 @@ dictionary GreenlightCredentials {
   string device_cert;
 };
 
+dictionary GreenlightNodeInfo {
+    string alias;
+    string color;
+    string network;
+    u32 block_height;
+};
+
 interface BlockingGreenlightAlbyClient {
   // TODO: error handling
-  string get_info();
+  GreenlightNodeInfo get_info();
   string make_invoice();
 };
 
