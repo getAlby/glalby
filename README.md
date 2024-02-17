@@ -13,22 +13,18 @@ Also download certs from Greenlight developer console
 cd examples
 ```
 
-### Equal
-
-```sh
-cargo run --bin equal
-```
+Note: Examples require an already-registered node
 
 ### GetInfo
 
 ```sh
-MNEMONIC="YOUR TWELVE WORD MNEMONIC HERE" GL_CUSTOM_NOBODY_KEY=/PATH/TO/glalby/gl-certs/client-key.pem GL_CUSTOM_NOBODY_CERT=/PATH/TO/glalby/gl-certs/client.crt cargo run --bin get-info
+MNEMONIC="YOUR TWELVE WORD MNEMONIC HERE" cargo run --bin get-info
 ```
 
 ## Generate bindings
 
 ```sh
-cargo build --release
+ GL_CUSTOM_NOBODY_KEY=/PATH/TO/glalby/gl-certs/client-key.pem GL_CUSTOM_NOBODY_CERT=/PATH/TO/glalby/gl-certs/client.crt cargo build --release
 uniffi-bindgen-go src/glalby.udl -o ffi/golang -c ./uniffi.toml
 cp target/release/libglalby_bindings.so ffi/golang/glalby
 ```
@@ -45,7 +41,7 @@ cargo test -- --nocapture
 Make sure to set `YOUR_NWC_NEXT_DIR`
 
 ```sh
-cargo build --release && uniffi-bindgen-go src/glalby.udl -o ffi/golang -c ./uniffi.toml && cp target/release/libglalby_bindings.so ffi/golang/glalby && cp ffi/golang/glalby YOUR_NWC_NEXT_DIR -r
+ GL_CUSTOM_NOBODY_KEY=/PATH/TO/glalby/gl-certs/client-key.pem GL_CUSTOM_NOBODY_CERT=/PATH/TO/glalby/gl-certs/client.crt cargo build --release && uniffi-bindgen-go src/glalby.udl -o ffi/golang -c ./uniffi.toml && cp target/release/libglalby_bindings.so ffi/golang/glalby && cp ffi/golang/glalby YOUR_NWC_NEXT_DIR -r
 ```
 
 ## Consume from go app

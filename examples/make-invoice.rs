@@ -6,7 +6,7 @@ fn main() {
     let credentials = recover(mnemonic.clone());
 
     let client = new_blocking_greenlight_alby_client(mnemonic, credentials);
-    let result = client.get_info();
+    let result = client.make_invoice();
 
     println!("Result: {}", result);
 }

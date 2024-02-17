@@ -11,6 +11,10 @@ path = "equal.rs"
 name = "get-info"
 path = "get-info.rs"
 
+[[bin]]
+name = "make-invoice"
+path = "make-invoice.rs"
+
 [dependencies]
 glalby = { path = "../" }
 

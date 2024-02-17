@@ -1026,7 +1026,6 @@ name = "glalby"
 version = "0.1.0"
 dependencies = [
  "bip39",
- "futures",
  "gl-client",
  "hex",
  "once_cell",

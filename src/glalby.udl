@@ -1,4 +1,17 @@
+dictionary GreenlightCredentials {
+  string device_key;
+  string device_cert;
+};
+
+interface BlockingGreenlightAlbyClient {
+  // TODO: error handling
+  string get_info();
+  string make_invoice();
+};
+
 namespace glalby {
-  boolean equal(u64 a, u64 b);
-  string get_info(string mnemonic);
+  // TODO: error handling
+  BlockingGreenlightAlbyClient new_blocking_greenlight_alby_client(string mnemonic, GreenlightCredentials credentials);
+  // TODO: error handling
+  GreenlightCredentials recover(string mnemonic);
 };
