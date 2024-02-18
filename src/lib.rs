@@ -1,11 +1,13 @@
 use std::sync::Arc;
 
+use once_cell::sync::Lazy;
+
 mod greenlight_alby_client;
 use greenlight_alby_client::{
     new_greenlight_alby_client, GreenlightAlbyClient, GreenlightCredentials, GreenlightNodeInfo,
+    Result, SdkError,
 };
 
-use once_cell::sync::Lazy;
 static RT: Lazy<tokio::runtime::Runtime> = Lazy::new(|| tokio::runtime::Runtime::new().unwrap());
 
 pub struct BlockingGreenlightAlbyClient {
@@ -13,34 +15,31 @@ pub struct BlockingGreenlightAlbyClient {
 }
 
 impl BlockingGreenlightAlbyClient {
-    // TODO: change return type, add error handling
-    pub fn get_info(&self) -> GreenlightNodeInfo {
+    pub fn get_info(&self) -> Result<GreenlightNodeInfo> {
         rt().block_on(self.greenlight_alby_client.get_info())
     }
 
-    // TODO: change request type, return type, add error handling
-    pub fn make_invoice(&self) -> String {
+    // TODO: change request type, return type
+    pub fn make_invoice(&self) -> Result<String> {
         rt().block_on(self.greenlight_alby_client.make_invoice())
     }
 }
 
-// TODO: error handling
-pub fn recover(mnemonic: String) -> GreenlightCredentials {
+pub fn recover(mnemonic: String) -> Result<GreenlightCredentials> {
     rt().block_on(greenlight_alby_client::recover(mnemonic))
 }
 
-// TODO: error handling
 pub fn new_blocking_greenlight_alby_client(
     mnemonic: String,
     credentials: GreenlightCredentials,
-) -> Arc<BlockingGreenlightAlbyClient> {
+) -> Result<Arc<BlockingGreenlightAlbyClient>> {
     rt().block_on(async move {
-        let greenlight_alby_client = new_greenlight_alby_client(mnemonic, credentials).await;
+        let greenlight_alby_client = new_greenlight_alby_client(mnemonic, credentials).await?;
         let blocking_greenlight_alby_client = Arc::new(BlockingGreenlightAlbyClient {
             greenlight_alby_client,
         });
 
-        blocking_greenlight_alby_client
+        Ok(blocking_greenlight_alby_client)
     })
 }
 

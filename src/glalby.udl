@@ -1,24 +1,34 @@
+[Error]
+enum SdkError {
+  "GreenlightApi",
+  "InvalidArgument",
+  "Other",
+};
+
 dictionary GreenlightCredentials {
   string device_key;
   string device_cert;
 };
 
 dictionary GreenlightNodeInfo {
-    string alias;
-    string color;
-    string network;
-    u32 block_height;
+  string alias;
+  string color;
+  string network;
+  u32 block_height;
 };
 
 interface BlockingGreenlightAlbyClient {
-  // TODO: error handling
+  [Throws=SdkError]
   GreenlightNodeInfo get_info();
+
+  [Throws=SdkError]
   string make_invoice();
 };
 
 namespace glalby {
-  // TODO: error handling
+  [Throws=SdkError]
   BlockingGreenlightAlbyClient new_blocking_greenlight_alby_client(string mnemonic, GreenlightCredentials credentials);
-  // TODO: error handling
+
+  [Throws=SdkError]
   GreenlightCredentials recover(string mnemonic);
 };
