@@ -17,12 +17,22 @@ dictionary GreenlightNodeInfo {
   u32 block_height;
 };
 
+dictionary GreenlightInvoiceRequest {
+  u64 amount_msat;
+  string description;
+  string label;
+};
+
+dictionary GreenlightInvoiceResponse {
+  string bolt11;
+};
+
 interface BlockingGreenlightAlbyClient {
   [Throws=SdkError]
   GreenlightNodeInfo get_info();
 
   [Throws=SdkError]
-  string make_invoice();
+  GreenlightInvoiceResponse make_invoice(GreenlightInvoiceRequest request);
 };
 
 namespace glalby {

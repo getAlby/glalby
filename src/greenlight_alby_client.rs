@@ -13,7 +13,7 @@ use gl_client::signer::model::greenlight::scheduler;
 use gl_client::signer::Signer;
 use gl_client::tls::TlsConfig;
 
-#[derive(Error, Debug)]
+#[derive(Error, Clone, Debug)]
 pub enum SdkError {
     #[error("invalid argument: {0}")]
     InvalidArgument(String),
@@ -46,6 +46,7 @@ impl SdkError {
 
 pub type Result<T> = std::result::Result<T, SdkError>;
 
+#[derive(Clone, Debug)]
 pub struct GreenlightCredentials {
     pub device_cert: String,
     pub device_key: String,
@@ -75,6 +76,41 @@ impl From<cln::GetinfoResponse> for GreenlightNodeInfo {
             color: hex::encode(info.color),
             network: info.network,
             block_height: info.blockheight,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct GreenlightInvoiceRequest {
+    pub amount_msat: u64,
+    pub description: String,
+    pub label: String,
+}
+
+impl From<GreenlightInvoiceRequest> for cln::InvoiceRequest {
+    fn from(req: GreenlightInvoiceRequest) -> Self {
+        cln::InvoiceRequest {
+            label: req.label,
+            amount_msat: Some(AmountOrAny {
+                value: Some(Value::Amount(Amount {
+                    msat: req.amount_msat,
+                })),
+            }),
+            description: req.description,
+            ..Default::default()
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct GreenlightInvoiceResponse {
+    pub bolt11: String,
+}
+
+impl From<cln::InvoiceResponse> for GreenlightInvoiceResponse {
+    fn from(invoice: cln::InvoiceResponse) -> Self {
+        GreenlightInvoiceResponse {
+            bolt11: invoice.bolt11,
         }
     }
 }
@@ -166,25 +202,16 @@ impl GreenlightAlbyClient {
             .map(|r| r.into_inner().into())
     }
 
-    // TODO: change request, response type
-    pub async fn make_invoice(&self) -> Result<String> {
+    pub async fn make_invoice(
+        &self,
+        req: GreenlightInvoiceRequest,
+    ) -> Result<GreenlightInvoiceResponse> {
         let mut node = self.get_node().await?;
 
-        // TODO: response handling
-        let invoice = node
-            .invoice(cln::InvoiceRequest {
-                label: rand::random::<u64>().to_string(),
-                amount_msat: Some(AmountOrAny {
-                    value: Some(Value::Amount(Amount { msat: 1000 })),
-                }),
-                ..Default::default()
-            })
+        node.invoice(cln::InvoiceRequest::from(req))
             .await
             .context("failed to make invoice")
-            .map_err(SdkError::greenlight_api)?
-            .into_inner();
-
-        println!("{}", invoice.bolt11);
-        Ok(invoice.bolt11)
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
     }
 }
