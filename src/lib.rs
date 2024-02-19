@@ -4,8 +4,11 @@ use once_cell::sync::Lazy;
 
 mod greenlight_alby_client;
 use greenlight_alby_client::{
-    new_greenlight_alby_client, GreenlightAlbyClient, GreenlightCredentials,
-    GreenlightInvoiceRequest, GreenlightInvoiceResponse, GreenlightNodeInfo, Result, SdkError,
+    new_greenlight_alby_client, GreenlightAlbyClient, GreenlightCredentials, Result, SdkError,
+};
+
+pub use greenlight_alby_client::{
+    GreenlightInvoiceRequest, GreenlightInvoiceResponse, GreenlightNodeInfo,
 };
 
 static RT: Lazy<tokio::runtime::Runtime> = Lazy::new(|| tokio::runtime::Runtime::new().unwrap());

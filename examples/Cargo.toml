@@ -13,6 +13,7 @@ path = "make-invoice.rs"
 
 [dependencies]
 glalby = { path = "../" }
+rand = "*"
 
 [build-dependencies]
 
