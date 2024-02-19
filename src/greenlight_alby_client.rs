@@ -20,9 +20,8 @@ pub enum SdkError {
 
     #[error("greenlight API error: {0}")]
     GreenlightApi(String),
-
-    #[error("other error: {0}")]
-    Other(String),
+    // #[error("other error: {0}")]
+    // Other(String),
 }
 
 impl SdkError {
@@ -34,9 +33,9 @@ impl SdkError {
         SdkError::GreenlightApi(Self::format_anyhow_error(e))
     }
 
-    fn other(e: anyhow::Error) -> Self {
-        SdkError::Other(Self::format_anyhow_error(e))
-    }
+    // fn other(e: anyhow::Error) -> Self {
+    //     SdkError::Other(Self::format_anyhow_error(e))
+    // }
 
     fn format_anyhow_error(e: anyhow::Error) -> String {
         // Use alternate format (:#) to get the full error chain.
@@ -63,6 +62,7 @@ impl From<scheduler::RecoveryResponse> for GreenlightCredentials {
 
 #[derive(Clone, Debug)]
 pub struct GreenlightNodeInfo {
+    pub pubkey: String,
     pub alias: String,
     pub color: String,
     pub network: String,
@@ -71,11 +71,14 @@ pub struct GreenlightNodeInfo {
 
 impl From<cln::GetinfoResponse> for GreenlightNodeInfo {
     fn from(info: cln::GetinfoResponse) -> Self {
+        let mut color = String::from("#");
+        color.push_str(&hex::encode(info.color));
         GreenlightNodeInfo {
             alias: info.alias.unwrap_or_default(),
-            color: hex::encode(info.color),
+            color: color,
             network: info.network,
             block_height: info.blockheight,
+            pubkey: hex::encode(info.id),
         }
     }
 }

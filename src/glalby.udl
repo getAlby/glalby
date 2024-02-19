@@ -2,7 +2,7 @@
 enum SdkError {
   "GreenlightApi",
   "InvalidArgument",
-  "Other",
+  //"Other",
 };
 
 dictionary GreenlightCredentials {
@@ -11,6 +11,7 @@ dictionary GreenlightCredentials {
 };
 
 dictionary GreenlightNodeInfo {
+  string pubkey;
   string alias;
   string color;
   string network;
