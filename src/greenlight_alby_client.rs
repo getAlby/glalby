@@ -61,7 +61,7 @@ impl From<scheduler::RecoveryResponse> for GreenlightCredentials {
 }
 
 #[derive(Clone, Debug)]
-pub struct GreenlightNodeInfo {
+pub struct GetInfoResponse {
     pub pubkey: String,
     pub alias: String,
     pub color: String,
@@ -69,11 +69,11 @@ pub struct GreenlightNodeInfo {
     pub block_height: u32,
 }
 
-impl From<cln::GetinfoResponse> for GreenlightNodeInfo {
+impl From<cln::GetinfoResponse> for GetInfoResponse {
     fn from(info: cln::GetinfoResponse) -> Self {
         let mut color = String::from("#");
         color.push_str(&hex::encode(info.color));
-        GreenlightNodeInfo {
+        GetInfoResponse {
             alias: info.alias.unwrap_or_default(),
             color: color,
             network: info.network,
@@ -84,14 +84,14 @@ impl From<cln::GetinfoResponse> for GreenlightNodeInfo {
 }
 
 #[derive(Clone, Debug)]
-pub struct GreenlightInvoiceRequest {
+pub struct MakeInvoiceRequest {
     pub amount_msat: u64,
     pub description: String,
     pub label: String,
 }
 
-impl From<GreenlightInvoiceRequest> for cln::InvoiceRequest {
-    fn from(req: GreenlightInvoiceRequest) -> Self {
+impl From<MakeInvoiceRequest> for cln::InvoiceRequest {
+    fn from(req: MakeInvoiceRequest) -> Self {
         cln::InvoiceRequest {
             label: req.label,
             amount_msat: Some(AmountOrAny {
@@ -106,13 +106,13 @@ impl From<GreenlightInvoiceRequest> for cln::InvoiceRequest {
 }
 
 #[derive(Clone, Debug)]
-pub struct GreenlightInvoiceResponse {
+pub struct MakeInvoiceResponse {
     pub bolt11: String,
 }
 
-impl From<cln::InvoiceResponse> for GreenlightInvoiceResponse {
+impl From<cln::InvoiceResponse> for MakeInvoiceResponse {
     fn from(invoice: cln::InvoiceResponse) -> Self {
-        GreenlightInvoiceResponse {
+        MakeInvoiceResponse {
             bolt11: invoice.bolt11,
         }
     }
@@ -195,7 +195,7 @@ impl GreenlightAlbyClient {
             .map_err(SdkError::greenlight_api)
     }
 
-    pub async fn get_info(&self) -> Result<GreenlightNodeInfo> {
+    pub async fn get_info(&self) -> Result<GetInfoResponse> {
         let mut node = self.get_node().await?;
 
         node.getinfo(cln::GetinfoRequest::default())
@@ -205,10 +205,7 @@ impl GreenlightAlbyClient {
             .map(|r| r.into_inner().into())
     }
 
-    pub async fn make_invoice(
-        &self,
-        req: GreenlightInvoiceRequest,
-    ) -> Result<GreenlightInvoiceResponse> {
+    pub async fn make_invoice(&self, req: MakeInvoiceRequest) -> Result<MakeInvoiceResponse> {
         let mut node = self.get_node().await?;
 
         node.invoice(cln::InvoiceRequest::from(req))

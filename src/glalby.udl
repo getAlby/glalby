@@ -10,7 +10,7 @@ dictionary GreenlightCredentials {
   string device_cert;
 };
 
-dictionary GreenlightNodeInfo {
+dictionary GetInfoResponse {
   string pubkey;
   string alias;
   string color;
@@ -18,22 +18,22 @@ dictionary GreenlightNodeInfo {
   u32 block_height;
 };
 
-dictionary GreenlightInvoiceRequest {
+dictionary MakeInvoiceRequest {
   u64 amount_msat;
   string description;
   string label;
 };
 
-dictionary GreenlightInvoiceResponse {
+dictionary MakeInvoiceResponse {
   string bolt11;
 };
 
 interface BlockingGreenlightAlbyClient {
   [Throws=SdkError]
-  GreenlightNodeInfo get_info();
+  GetInfoResponse get_info();
 
   [Throws=SdkError]
-  GreenlightInvoiceResponse make_invoice(GreenlightInvoiceRequest request);
+  MakeInvoiceResponse make_invoice(MakeInvoiceRequest request);
 };
 
 namespace glalby {
