@@ -1032,11 +1032,13 @@ dependencies = [
 name = "glalby"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bip39",
  "gl-client",
  "hex",
  "once_cell",
  "rand",
+ "thiserror",
  "tokio",
  "uniffi",
  "uniffi_bindgen",
