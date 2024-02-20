@@ -6,8 +6,7 @@ use bip39::Mnemonic;
 use thiserror::Error;
 
 use gl_client::bitcoin::Network;
-use gl_client::pb::cln::amount_or_any::Value;
-use gl_client::pb::cln::{self, Amount, AmountOrAny};
+use gl_client::pb::cln;
 use gl_client::scheduler::Scheduler;
 use gl_client::signer::model::greenlight::scheduler;
 use gl_client::signer::Signer;
@@ -94,8 +93,8 @@ impl From<MakeInvoiceRequest> for cln::InvoiceRequest {
     fn from(req: MakeInvoiceRequest) -> Self {
         cln::InvoiceRequest {
             label: req.label,
-            amount_msat: Some(AmountOrAny {
-                value: Some(Value::Amount(Amount {
+            amount_msat: Some(cln::AmountOrAny {
+                value: Some(cln::amount_or_any::Value::Amount(cln::Amount {
                     msat: req.amount_msat,
                 })),
             }),
@@ -146,15 +145,49 @@ impl From<cln::PayResponse> for PayResponse {
 }
 
 #[derive(Clone, Debug)]
+pub struct KeySendRequest {
+    pub destination: String,
+    pub amount_msat: Option<u64>,
+    pub label: Option<String>,
+}
+
+impl TryFrom<KeySendRequest> for cln::KeysendRequest {
+    type Error = SdkError;
+
+    fn try_from(req: KeySendRequest) -> Result<Self> {
+        Ok(cln::KeysendRequest {
+            destination: hex::decode(req.destination)
+                .context("destination contains invalid hex value")
+                .map_err(SdkError::invalid_arg)?
+                .into(),
+            amount_msat: req.amount_msat.map(|a| cln::Amount { msat: a }),
+            label: req.label,
+            ..Default::default()
+        })
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct KeySendResponse {
+    pub payment_preimage: String,
+}
+
+impl From<cln::KeysendResponse> for KeySendResponse {
+    fn from(pay: cln::KeysendResponse) -> Self {
+        KeySendResponse {
+            payment_preimage: hex::encode(pay.payment_preimage),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct ListFundsRequest {
     pub spent: Option<bool>,
 }
 
 impl From<ListFundsRequest> for cln::ListfundsRequest {
     fn from(req: ListFundsRequest) -> Self {
-        cln::ListfundsRequest {
-            spent: req.spent,
-        }
+        cln::ListfundsRequest { spent: req.spent }
     }
 }
 
@@ -225,8 +258,86 @@ pub struct ListFundsResponse {
 impl From<cln::ListfundsResponse> for ListFundsResponse {
     fn from(response: cln::ListfundsResponse) -> Self {
         ListFundsResponse {
-            outputs: response.outputs.into_iter().map(ListFundsOutput::from).collect(),
-            channels: response.channels.into_iter().map(ListFundsChannel::from).collect(),
+            outputs: response
+                .outputs
+                .into_iter()
+                .map(ListFundsOutput::from)
+                .collect(),
+            channels: response
+                .channels
+                .into_iter()
+                .map(ListFundsChannel::from)
+                .collect(),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ConnectPeerRequest {
+    pub id: String,
+    pub host: Option<String>,
+    pub port: Option<u16>,
+}
+
+impl From<ConnectPeerRequest> for cln::ConnectRequest {
+    fn from(req: ConnectPeerRequest) -> Self {
+        cln::ConnectRequest {
+            id: req.id,
+            host: req.host,
+            port: req.port.map(|p| p as u32),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ConnectPeerResponse {
+    pub id: String,
+}
+
+impl From<cln::ConnectResponse> for ConnectPeerResponse {
+    fn from(response: cln::ConnectResponse) -> Self {
+        ConnectPeerResponse {
+            id: hex::encode(response.id),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct FundChannelRequest {
+    pub id: String,
+    pub amount_msat: Option<u64>,
+    pub announce: Option<bool>,
+    pub minconf: Option<u32>,
+}
+
+impl TryFrom<FundChannelRequest> for cln::FundchannelRequest {
+    type Error = SdkError;
+
+    fn try_from(req: FundChannelRequest) -> Result<Self> {
+        Ok(cln::FundchannelRequest {
+            id: hex::decode(req.id)
+                .context("channel id contains invalid hex value")
+                .map_err(SdkError::invalid_arg)?
+                .into(),
+            amount: req.amount_msat.map(|a| cln::AmountOrAll {
+                value: Some(cln::amount_or_all::Value::Amount(cln::Amount { msat: a })),
+            }),
+            announce: req.announce,
+            minconf: req.minconf,
+            ..Default::default()
+        })
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct FundChannelResponse {
+    pub txid: String,
+}
+
+impl From<cln::FundchannelResponse> for FundChannelResponse {
+    fn from(response: cln::FundchannelResponse) -> Self {
+        FundChannelResponse {
+            txid: hex::encode(response.txid),
         }
     }
 }
@@ -338,12 +449,42 @@ impl GreenlightAlbyClient {
             .map(|r| r.into_inner().into())
     }
 
+    pub async fn key_send(&self, req: KeySendRequest) -> Result<KeySendResponse> {
+        let mut node = self.get_node().await?;
+
+        node.key_send(cln::KeysendRequest::try_from(req)?)
+            .await
+            .context("failed to send keysend")
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
+    }
+
     pub async fn list_funds(&self, req: ListFundsRequest) -> Result<ListFundsResponse> {
         let mut node = self.get_node().await?;
 
         node.list_funds(cln::ListfundsRequest::from(req))
             .await
             .context("failed to list funds")
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
+    }
+
+    pub async fn connect_peer(&self, req: ConnectPeerRequest) -> Result<ConnectPeerResponse> {
+        let mut node = self.get_node().await?;
+
+        node.connect_peer(cln::ConnectRequest::from(req))
+            .await
+            .context("failed to connect peer")
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
+    }
+
+    pub async fn fund_channel(&self, req: FundChannelRequest) -> Result<FundChannelResponse> {
+        let mut node = self.get_node().await?;
+
+        node.fund_channel(cln::FundchannelRequest::try_from(req)?)
+            .await
+            .context("failed to fund channel")
             .map_err(SdkError::greenlight_api)
             .map(|r| r.into_inner().into())
     }

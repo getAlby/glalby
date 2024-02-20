@@ -36,6 +36,16 @@ dictionary PayResponse {
   string payment_preimage;
 };
 
+dictionary KeySendRequest {
+  string destination;
+  u64? amount_msat;
+  string? label;
+};
+
+dictionary KeySendResponse {
+  string payment_preimage;
+};
+
 dictionary ListFundsRequest {
   boolean? spent;
 };
@@ -69,6 +79,27 @@ dictionary ListFundsResponse {
   sequence<ListFundsChannel> channels;
 };
 
+dictionary ConnectPeerRequest {
+  string id;
+  string? host;
+  u16? port;
+};
+
+dictionary ConnectPeerResponse {
+  string id;
+};
+
+dictionary FundChannelRequest {
+  string id;
+  u64? amount_msat;
+  boolean? announce;
+  u32? minconf;
+};
+
+dictionary FundChannelResponse {
+  string txid;
+};
+
 interface BlockingGreenlightAlbyClient {
   [Throws=SdkError]
   GetInfoResponse get_info();
@@ -80,7 +111,16 @@ interface BlockingGreenlightAlbyClient {
   PayResponse pay(PayRequest request);
 
   [Throws=SdkError]
+  KeySendResponse key_send(KeySendRequest request);
+
+  [Throws=SdkError]
   ListFundsResponse list_funds(ListFundsRequest request);
+
+  [Throws=SdkError]
+  ConnectPeerResponse connect_peer(ConnectPeerRequest request);
+
+  [Throws=SdkError]
+  FundChannelResponse fund_channel(FundChannelRequest request);
 };
 
 namespace glalby {
