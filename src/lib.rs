@@ -7,7 +7,10 @@ use greenlight_alby_client::{
     new_greenlight_alby_client, GreenlightAlbyClient, GreenlightCredentials, Result, SdkError,
 };
 
-pub use greenlight_alby_client::{GetInfoResponse, MakeInvoiceRequest, MakeInvoiceResponse};
+pub use greenlight_alby_client::{
+    GetInfoResponse, ListFundsChannel, ListFundsOutput, ListFundsRequest, ListFundsResponse,
+    MakeInvoiceRequest, MakeInvoiceResponse, PayRequest, PayResponse,
+};
 
 static RT: Lazy<tokio::runtime::Runtime> = Lazy::new(|| tokio::runtime::Runtime::new().unwrap());
 
@@ -22,6 +25,14 @@ impl BlockingGreenlightAlbyClient {
 
     pub fn make_invoice(&self, req: MakeInvoiceRequest) -> Result<MakeInvoiceResponse> {
         rt().block_on(self.greenlight_alby_client.make_invoice(req))
+    }
+
+    pub fn pay(&self, req: PayRequest) -> Result<PayResponse> {
+        rt().block_on(self.greenlight_alby_client.pay(req))
+    }
+
+    pub fn list_funds(&self, req: ListFundsRequest) -> Result<ListFundsResponse> {
+        rt().block_on(self.greenlight_alby_client.list_funds(req))
     }
 }
 

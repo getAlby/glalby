@@ -118,6 +118,119 @@ impl From<cln::InvoiceResponse> for MakeInvoiceResponse {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct PayRequest {
+    pub bolt11: String,
+}
+
+impl From<PayRequest> for cln::PayRequest {
+    fn from(req: PayRequest) -> Self {
+        cln::PayRequest {
+            bolt11: req.bolt11,
+            ..Default::default()
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct PayResponse {
+    pub payment_preimage: String,
+}
+
+impl From<cln::PayResponse> for PayResponse {
+    fn from(pay: cln::PayResponse) -> Self {
+        PayResponse {
+            payment_preimage: hex::encode(pay.payment_preimage),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ListFundsRequest {
+    pub spent: Option<bool>,
+}
+
+impl From<ListFundsRequest> for cln::ListfundsRequest {
+    fn from(req: ListFundsRequest) -> Self {
+        cln::ListfundsRequest {
+            spent: req.spent,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ListFundsOutput {
+    pub txid: String,
+    pub output: u32,
+    pub amount_msat: Option<u64>,
+    pub scriptpubkey: String,
+    pub address: Option<String>,
+    pub redeemscript: Option<String>,
+    pub status: i32,
+    pub reserved: bool,
+    pub blockheight: Option<u32>,
+}
+
+impl From<cln::ListfundsOutputs> for ListFundsOutput {
+    fn from(output: cln::ListfundsOutputs) -> Self {
+        ListFundsOutput {
+            txid: hex::encode(output.txid),
+            output: output.output,
+            amount_msat: output.amount_msat.map(|a| a.msat),
+            scriptpubkey: hex::encode(output.scriptpubkey),
+            address: output.address,
+            redeemscript: output.redeemscript.map(hex::encode),
+            status: output.status,
+            reserved: output.reserved,
+            blockheight: output.blockheight,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ListFundsChannel {
+    pub peer_id: String,
+    pub our_amount_msat: Option<u64>,
+    pub amount_msat: Option<u64>,
+    pub funding_txid: String,
+    pub funding_output: u32,
+    pub connected: bool,
+    pub state: i32,
+    pub channel_id: Option<String>,
+    pub short_channel_id: Option<String>,
+}
+
+impl From<cln::ListfundsChannels> for ListFundsChannel {
+    fn from(channel: cln::ListfundsChannels) -> Self {
+        ListFundsChannel {
+            peer_id: hex::encode(channel.peer_id),
+            our_amount_msat: channel.our_amount_msat.map(|a| a.msat),
+            amount_msat: channel.amount_msat.map(|a| a.msat),
+            funding_txid: hex::encode(channel.funding_txid),
+            funding_output: channel.funding_output,
+            connected: channel.connected,
+            state: channel.state,
+            channel_id: channel.channel_id.map(hex::encode),
+            short_channel_id: channel.short_channel_id,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ListFundsResponse {
+    pub outputs: Vec<ListFundsOutput>,
+    pub channels: Vec<ListFundsChannel>,
+}
+
+impl From<cln::ListfundsResponse> for ListFundsResponse {
+    fn from(response: cln::ListfundsResponse) -> Self {
+        ListFundsResponse {
+            outputs: response.outputs.into_iter().map(ListFundsOutput::from).collect(),
+            channels: response.channels.into_iter().map(ListFundsChannel::from).collect(),
+        }
+    }
+}
+
 pub struct GreenlightAlbyClient {
     // signer: gl_client::signer::Signer,
     scheduler: gl_client::scheduler::Scheduler,
@@ -211,6 +324,26 @@ impl GreenlightAlbyClient {
         node.invoice(cln::InvoiceRequest::from(req))
             .await
             .context("failed to make invoice")
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
+    }
+
+    pub async fn pay(&self, req: PayRequest) -> Result<PayResponse> {
+        let mut node = self.get_node().await?;
+
+        node.pay(cln::PayRequest::from(req))
+            .await
+            .context("failed to pay invoice")
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
+    }
+
+    pub async fn list_funds(&self, req: ListFundsRequest) -> Result<ListFundsResponse> {
+        let mut node = self.get_node().await?;
+
+        node.list_funds(cln::ListfundsRequest::from(req))
+            .await
+            .context("failed to list funds")
             .map_err(SdkError::greenlight_api)
             .map(|r| r.into_inner().into())
     }

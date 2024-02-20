@@ -28,12 +28,59 @@ dictionary MakeInvoiceResponse {
   string bolt11;
 };
 
+dictionary PayRequest {
+  string bolt11;
+};
+
+dictionary PayResponse {
+  string payment_preimage;
+};
+
+dictionary ListFundsRequest {
+  boolean? spent;
+};
+
+dictionary ListFundsOutput {
+  string txid;
+  u32 output;
+  u64? amount_msat;
+  string scriptpubkey;
+  string? address;
+  string? redeemscript;
+  i32 status;
+  boolean reserved;
+  u32? blockheight;
+};
+
+dictionary ListFundsChannel {
+  string peer_id;
+  u64? our_amount_msat;
+  u64? amount_msat;
+  string funding_txid;
+  u32 funding_output;
+  boolean connected;
+  i32 state;
+  string? channel_id;
+  string? short_channel_id;
+};
+
+dictionary ListFundsResponse {
+  sequence<ListFundsOutput> outputs;
+  sequence<ListFundsChannel> channels;
+};
+
 interface BlockingGreenlightAlbyClient {
   [Throws=SdkError]
   GetInfoResponse get_info();
 
   [Throws=SdkError]
   MakeInvoiceResponse make_invoice(MakeInvoiceRequest request);
+
+  [Throws=SdkError]
+  PayResponse pay(PayRequest request);
+
+  [Throws=SdkError]
+  ListFundsResponse list_funds(ListFundsRequest request);
 };
 
 namespace glalby {
