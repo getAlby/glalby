@@ -74,7 +74,7 @@ impl From<cln::GetinfoResponse> for GetInfoResponse {
         color.push_str(&hex::encode(info.color));
         GetInfoResponse {
             alias: info.alias.unwrap_or_default(),
-            color: color,
+            color,
             network: info.network,
             block_height: info.blockheight,
             pubkey: hex::encode(info.id),
@@ -392,9 +392,238 @@ impl From<cln::NewaddrResponse> for NewAddressResponse {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
+pub enum ListInvoicesIndex {
+    Created,
+    Updated,
+}
+
+impl From<ListInvoicesIndex> for cln::listinvoices_request::ListinvoicesIndex {
+    fn from(i: ListInvoicesIndex) -> Self {
+        match i {
+            ListInvoicesIndex::Created => cln::listinvoices_request::ListinvoicesIndex::Created,
+            ListInvoicesIndex::Updated => cln::listinvoices_request::ListinvoicesIndex::Updated,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ListInvoicesRequest {
+    pub label: Option<String>,
+    pub invstring: Option<String>,
+    pub payment_hash: Option<String>,
+    pub offer_id: Option<String>,
+    pub index: Option<ListInvoicesIndex>,
+    pub start: Option<u64>,
+    pub limit: Option<u32>,
+}
+
+impl TryFrom<ListInvoicesRequest> for cln::ListinvoicesRequest {
+    type Error = SdkError;
+
+    fn try_from(req: ListInvoicesRequest) -> Result<Self> {
+        Ok(cln::ListinvoicesRequest {
+            label: req.label,
+            invstring: req.invstring,
+            payment_hash: req
+                .payment_hash
+                .map(hex::decode)
+                .transpose()
+                .context("payment hash contains invalid hex value")
+                .map_err(SdkError::invalid_arg)?,
+            offer_id: req.offer_id,
+            index: req
+                .index
+                .map(cln::listinvoices_request::ListinvoicesIndex::from)
+                .map(|i| i as i32),
+            start: req.start,
+            limit: req.limit,
+        })
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ListInvoicesInvoicePaidOutpoint {
+    pub txid: Option<String>,
+    pub outnum: Option<u32>,
+}
+
+impl From<cln::ListinvoicesInvoicesPaidOutpoint> for ListInvoicesInvoicePaidOutpoint {
+    fn from(outpoint: cln::ListinvoicesInvoicesPaidOutpoint) -> Self {
+        ListInvoicesInvoicePaidOutpoint {
+            txid: outpoint.txid.map(hex::encode),
+            outnum: outpoint.outnum,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ListInvoicesInvoice {
+    pub label: String,
+    pub description: Option<String>,
+    pub payment_hash: String,
+    pub status: i32,
+    pub expires_at: u64,
+    pub amount_msat: Option<u64>,
+    pub bolt11: Option<String>,
+    pub bolt12: Option<String>,
+    pub local_offer_id: Option<String>,
+    pub invreq_payer_note: Option<String>,
+    pub created_index: Option<u64>,
+    pub updated_index: Option<u64>,
+    pub pay_index: Option<u64>,
+    pub amount_received_msat: Option<u64>,
+    pub paid_at: Option<u64>,
+    pub paid_outpoint: Option<ListInvoicesInvoicePaidOutpoint>,
+    pub payment_preimage: Option<String>,
+}
+
+impl From<cln::ListinvoicesInvoices> for ListInvoicesInvoice {
+    fn from(invoice: cln::ListinvoicesInvoices) -> Self {
+        ListInvoicesInvoice {
+            label: invoice.label,
+            description: invoice.description,
+            payment_hash: hex::encode(invoice.payment_hash),
+            status: invoice.status,
+            expires_at: invoice.expires_at,
+            amount_msat: invoice.amount_msat.map(|a| a.msat),
+            bolt11: invoice.bolt11,
+            bolt12: invoice.bolt12,
+            local_offer_id: invoice.local_offer_id.map(hex::encode),
+            invreq_payer_note: invoice.invreq_payer_note,
+            created_index: invoice.created_index,
+            updated_index: invoice.updated_index,
+            pay_index: invoice.pay_index,
+            amount_received_msat: invoice.amount_received_msat.map(|a| a.msat),
+            paid_at: invoice.paid_at,
+            paid_outpoint: invoice
+                .paid_outpoint
+                .map(ListInvoicesInvoicePaidOutpoint::from),
+            payment_preimage: invoice.payment_preimage.map(hex::encode),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ListInvoicesResponse {
+    pub invoices: Vec<ListInvoicesInvoice>,
+}
+
+impl From<cln::ListinvoicesResponse> for ListInvoicesResponse {
+    fn from(response: cln::ListinvoicesResponse) -> Self {
+        ListInvoicesResponse {
+            invoices: response
+                .invoices
+                .into_iter()
+                .map(ListInvoicesInvoice::from)
+                .collect(),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum ListPaymentsStatus {
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl From<ListPaymentsStatus> for cln::listpays_request::ListpaysStatus {
+    fn from(s: ListPaymentsStatus) -> Self {
+        match s {
+            ListPaymentsStatus::Pending => cln::listpays_request::ListpaysStatus::Pending,
+            ListPaymentsStatus::Complete => cln::listpays_request::ListpaysStatus::Complete,
+            ListPaymentsStatus::Failed => cln::listpays_request::ListpaysStatus::Failed,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ListPaymentsRequest {
+    pub bolt11: Option<String>,
+    pub payment_hash: Option<String>,
+    pub status: Option<ListPaymentsStatus>,
+}
+
+impl TryFrom<ListPaymentsRequest> for cln::ListpaysRequest {
+    type Error = SdkError;
+
+    fn try_from(req: ListPaymentsRequest) -> Result<Self> {
+        Ok(cln::ListpaysRequest {
+            bolt11: req.bolt11,
+            payment_hash: req
+                .payment_hash
+                .map(hex::decode)
+                .transpose()
+                .context("payment hash contains invalid hex value")
+                .map_err(SdkError::invalid_arg)?,
+            status: req
+                .status
+                .map(cln::listpays_request::ListpaysStatus::from)
+                .map(|s| s as i32),
+        })
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ListPaymentsPayment {
+    pub payment_hash: String,
+    pub status: i32,
+    pub destination: Option<String>,
+    pub created_at: u64,
+    pub completed_at: Option<u64>,
+    pub label: Option<String>,
+    pub bolt11: Option<String>,
+    pub description: Option<String>,
+    pub bolt12: Option<String>,
+    pub amount_msat: Option<u64>,
+    pub amount_sent_msat: Option<u64>,
+    pub preimage: Option<String>,
+    pub number_of_parts: Option<u64>,
+    pub erroronion: Option<String>,
+}
+
+impl From<cln::ListpaysPays> for ListPaymentsPayment {
+    fn from(payment: cln::ListpaysPays) -> Self {
+        ListPaymentsPayment {
+            payment_hash: hex::encode(payment.payment_hash),
+            status: payment.status,
+            destination: payment.destination.map(hex::encode),
+            created_at: payment.created_at,
+            completed_at: payment.completed_at,
+            label: payment.label,
+            bolt11: payment.bolt11,
+            description: payment.description,
+            bolt12: payment.bolt12,
+            amount_msat: payment.amount_msat.map(|a| a.msat),
+            amount_sent_msat: payment.amount_sent_msat.map(|a| a.msat),
+            preimage: payment.preimage.map(hex::encode),
+            number_of_parts: payment.number_of_parts,
+            erroronion: payment.erroronion.map(hex::encode),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ListPaymentsResponse {
+    pub payments: Vec<ListPaymentsPayment>,
+}
+
+impl From<cln::ListpaysResponse> for ListPaymentsResponse {
+    fn from(response: cln::ListpaysResponse) -> Self {
+        ListPaymentsResponse {
+            payments: response
+                .pays
+                .into_iter()
+                .map(ListPaymentsPayment::from)
+                .collect(),
+        }
+    }
+}
+
 pub struct GreenlightAlbyClient {
     // signer: gl_client::signer::Signer,
-    scheduler: gl_client::scheduler::Scheduler,
+    scheduler: Scheduler,
     tls: TlsConfig,
 }
 
@@ -545,6 +774,26 @@ impl GreenlightAlbyClient {
         node.new_addr(cln::NewaddrRequest::from(req))
             .await
             .context("failed to request new address")
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
+    }
+
+    pub async fn list_invoices(&self, req: ListInvoicesRequest) -> Result<ListInvoicesResponse> {
+        let mut node = self.get_node().await?;
+
+        node.list_invoices(cln::ListinvoicesRequest::try_from(req)?)
+            .await
+            .context("failed to list invoices")
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
+    }
+
+    pub async fn list_payments(&self, req: ListPaymentsRequest) -> Result<ListPaymentsResponse> {
+        let mut node = self.get_node().await?;
+
+        node.list_pays(cln::ListpaysRequest::try_from(req)?)
+            .await
+            .context("failed to list payments")
             .map_err(SdkError::greenlight_api)
             .map(|r| r.into_inner().into())
     }

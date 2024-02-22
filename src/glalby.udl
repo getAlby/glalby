@@ -116,6 +116,83 @@ dictionary NewAddressResponse {
   string? p2sh_segwit;
 };
 
+enum ListInvoicesIndex {
+  "Created",
+  "Updated",
+};
+
+dictionary ListInvoicesRequest {
+  string? label;
+  string? invstring;
+  string? payment_hash;
+  string? offer_id;
+  ListInvoicesIndex? index;
+  u64? start;
+  u32? limit;
+};
+
+dictionary ListInvoicesInvoicePaidOutpoint {
+  string? txid;
+  u32? outnum;
+};
+
+dictionary ListInvoicesInvoice {
+  string label;
+  string? description;
+  string payment_hash;
+  i32 status;
+  u64 expires_at;
+  u64? amount_msat;
+  string? bolt11;
+  string? bolt12;
+  string? local_offer_id;
+  string? invreq_payer_note;
+  u64? created_index;
+  u64? updated_index;
+  u64? pay_index;
+  u64? amount_received_msat;
+  u64? paid_at;
+  ListInvoicesInvoicePaidOutpoint? paid_outpoint;
+  string? payment_preimage;
+};
+
+dictionary ListInvoicesResponse {
+  sequence<ListInvoicesInvoice> invoices;
+};
+
+enum ListPaymentsStatus {
+  "Pending",
+  "Complete",
+  "Failed",
+};
+
+dictionary ListPaymentsRequest {
+  string? bolt11;
+  string? payment_hash;
+  ListPaymentsStatus? status;
+};
+
+dictionary ListPaymentsPayment {
+  string payment_hash;
+  i32 status;
+  string? destination;
+  u64 created_at;
+  u64? completed_at;
+  string? label;
+  string? bolt11;
+  string? description;
+  string? bolt12;
+  u64? amount_msat;
+  u64? amount_sent_msat;
+  string? preimage;
+  u64? number_of_parts;
+  string? erroronion;
+};
+
+dictionary ListPaymentsResponse {
+  sequence<ListPaymentsPayment> payments;
+};
+
 interface BlockingGreenlightAlbyClient {
   [Throws=SdkError]
   GetInfoResponse get_info();
@@ -140,6 +217,12 @@ interface BlockingGreenlightAlbyClient {
 
   [Throws=SdkError]
   NewAddressResponse new_address(NewAddressRequest request);
+
+  [Throws=SdkError]
+  ListInvoicesResponse list_invoices(ListInvoicesRequest request);
+
+  [Throws=SdkError]
+  ListPaymentsResponse list_payments(ListPaymentsRequest request);
 };
 
 namespace glalby {
