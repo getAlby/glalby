@@ -33,7 +33,7 @@ dictionary PayRequest {
 };
 
 dictionary PayResponse {
-  string payment_preimage;
+  string preimage;
 };
 
 dictionary KeySendRequest {

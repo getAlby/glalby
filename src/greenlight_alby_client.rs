@@ -133,13 +133,13 @@ impl From<PayRequest> for cln::PayRequest {
 
 #[derive(Clone, Debug)]
 pub struct PayResponse {
-    pub payment_preimage: String,
+    pub preimage: String,
 }
 
 impl From<cln::PayResponse> for PayResponse {
     fn from(pay: cln::PayResponse) -> Self {
         PayResponse {
-            payment_preimage: hex::encode(pay.payment_preimage),
+            preimage: hex::encode(pay.payment_preimage),
         }
     }
 }
