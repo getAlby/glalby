@@ -364,11 +364,47 @@ func uniffiCheckChecksums() {
 	}
 	{
 		checksum := rustCall(func(uniffiStatus *C.RustCallStatus) C.uint16_t {
+			return C.uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_connect_peer(uniffiStatus)
+		})
+		if checksum != 50417 {
+			// If this happens try cleaning and rebuilding your project
+			panic("glalby: uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_connect_peer: UniFFI API checksum mismatch")
+		}
+	}
+	{
+		checksum := rustCall(func(uniffiStatus *C.RustCallStatus) C.uint16_t {
+			return C.uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_fund_channel(uniffiStatus)
+		})
+		if checksum != 52932 {
+			// If this happens try cleaning and rebuilding your project
+			panic("glalby: uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_fund_channel: UniFFI API checksum mismatch")
+		}
+	}
+	{
+		checksum := rustCall(func(uniffiStatus *C.RustCallStatus) C.uint16_t {
 			return C.uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_get_info(uniffiStatus)
 		})
 		if checksum != 49263 {
 			// If this happens try cleaning and rebuilding your project
 			panic("glalby: uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_get_info: UniFFI API checksum mismatch")
+		}
+	}
+	{
+		checksum := rustCall(func(uniffiStatus *C.RustCallStatus) C.uint16_t {
+			return C.uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_key_send(uniffiStatus)
+		})
+		if checksum != 14883 {
+			// If this happens try cleaning and rebuilding your project
+			panic("glalby: uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_key_send: UniFFI API checksum mismatch")
+		}
+	}
+	{
+		checksum := rustCall(func(uniffiStatus *C.RustCallStatus) C.uint16_t {
+			return C.uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_list_funds(uniffiStatus)
+		})
+		if checksum != 6766 {
+			// If this happens try cleaning and rebuilding your project
+			panic("glalby: uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_list_funds: UniFFI API checksum mismatch")
 		}
 	}
 	{
@@ -380,7 +416,40 @@ func uniffiCheckChecksums() {
 			panic("glalby: uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_make_invoice: UniFFI API checksum mismatch")
 		}
 	}
+	{
+		checksum := rustCall(func(uniffiStatus *C.RustCallStatus) C.uint16_t {
+			return C.uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_pay(uniffiStatus)
+		})
+		if checksum != 10999 {
+			// If this happens try cleaning and rebuilding your project
+			panic("glalby: uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_pay: UniFFI API checksum mismatch")
+		}
+	}
 }
+
+type FfiConverterUint16 struct{}
+
+var FfiConverterUint16INSTANCE = FfiConverterUint16{}
+
+func (FfiConverterUint16) Lower(value uint16) C.uint16_t {
+	return C.uint16_t(value)
+}
+
+func (FfiConverterUint16) Write(writer io.Writer, value uint16) {
+	writeUint16(writer, value)
+}
+
+func (FfiConverterUint16) Lift(value C.uint16_t) uint16 {
+	return uint16(value)
+}
+
+func (FfiConverterUint16) Read(reader io.Reader) uint16 {
+	return readUint16(reader)
+}
+
+type FfiDestroyerUint16 struct{}
+
+func (FfiDestroyerUint16) Destroy(_ uint16) {}
 
 type FfiConverterUint32 struct{}
 
@@ -406,6 +475,30 @@ type FfiDestroyerUint32 struct{}
 
 func (FfiDestroyerUint32) Destroy(_ uint32) {}
 
+type FfiConverterInt32 struct{}
+
+var FfiConverterInt32INSTANCE = FfiConverterInt32{}
+
+func (FfiConverterInt32) Lower(value int32) C.int32_t {
+	return C.int32_t(value)
+}
+
+func (FfiConverterInt32) Write(writer io.Writer, value int32) {
+	writeInt32(writer, value)
+}
+
+func (FfiConverterInt32) Lift(value C.int32_t) int32 {
+	return int32(value)
+}
+
+func (FfiConverterInt32) Read(reader io.Reader) int32 {
+	return readInt32(reader)
+}
+
+type FfiDestroyerInt32 struct{}
+
+func (FfiDestroyerInt32) Destroy(_ int32) {}
+
 type FfiConverterUint64 struct{}
 
 var FfiConverterUint64INSTANCE = FfiConverterUint64{}
@@ -429,6 +522,37 @@ func (FfiConverterUint64) Read(reader io.Reader) uint64 {
 type FfiDestroyerUint64 struct{}
 
 func (FfiDestroyerUint64) Destroy(_ uint64) {}
+
+type FfiConverterBool struct{}
+
+var FfiConverterBoolINSTANCE = FfiConverterBool{}
+
+func (FfiConverterBool) Lower(value bool) C.int8_t {
+	if value {
+		return C.int8_t(1)
+	}
+	return C.int8_t(0)
+}
+
+func (FfiConverterBool) Write(writer io.Writer, value bool) {
+	if value {
+		writeInt8(writer, 1)
+	} else {
+		writeInt8(writer, 0)
+	}
+}
+
+func (FfiConverterBool) Lift(value C.int8_t) bool {
+	return value != 0
+}
+
+func (FfiConverterBool) Read(reader io.Reader) bool {
+	return readInt8(reader) != 0
+}
+
+type FfiDestroyerBool struct{}
+
+func (FfiDestroyerBool) Destroy(_ bool) {}
 
 type FfiConverterString struct{}
 
@@ -539,6 +663,36 @@ type BlockingGreenlightAlbyClient struct {
 	ffiObject FfiObject
 }
 
+func (_self *BlockingGreenlightAlbyClient) ConnectPeer(request ConnectPeerRequest) (ConnectPeerResponse, error) {
+	_pointer := _self.ffiObject.incrementPointer("*BlockingGreenlightAlbyClient")
+	defer _self.ffiObject.decrementPointer()
+	_uniffiRV, _uniffiErr := rustCallWithError(FfiConverterTypeSdkError{}, func(_uniffiStatus *C.RustCallStatus) RustBufferI {
+		return C.uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_connect_peer(
+			_pointer, FfiConverterTypeConnectPeerRequestINSTANCE.Lower(request), _uniffiStatus)
+	})
+	if _uniffiErr != nil {
+		var _uniffiDefaultValue ConnectPeerResponse
+		return _uniffiDefaultValue, _uniffiErr
+	} else {
+		return FfiConverterTypeConnectPeerResponseINSTANCE.Lift(_uniffiRV), _uniffiErr
+	}
+}
+
+func (_self *BlockingGreenlightAlbyClient) FundChannel(request FundChannelRequest) (FundChannelResponse, error) {
+	_pointer := _self.ffiObject.incrementPointer("*BlockingGreenlightAlbyClient")
+	defer _self.ffiObject.decrementPointer()
+	_uniffiRV, _uniffiErr := rustCallWithError(FfiConverterTypeSdkError{}, func(_uniffiStatus *C.RustCallStatus) RustBufferI {
+		return C.uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_fund_channel(
+			_pointer, FfiConverterTypeFundChannelRequestINSTANCE.Lower(request), _uniffiStatus)
+	})
+	if _uniffiErr != nil {
+		var _uniffiDefaultValue FundChannelResponse
+		return _uniffiDefaultValue, _uniffiErr
+	} else {
+		return FfiConverterTypeFundChannelResponseINSTANCE.Lift(_uniffiRV), _uniffiErr
+	}
+}
+
 func (_self *BlockingGreenlightAlbyClient) GetInfo() (GetInfoResponse, error) {
 	_pointer := _self.ffiObject.incrementPointer("*BlockingGreenlightAlbyClient")
 	defer _self.ffiObject.decrementPointer()
@@ -554,6 +708,36 @@ func (_self *BlockingGreenlightAlbyClient) GetInfo() (GetInfoResponse, error) {
 	}
 }
 
+func (_self *BlockingGreenlightAlbyClient) KeySend(request KeySendRequest) (KeySendResponse, error) {
+	_pointer := _self.ffiObject.incrementPointer("*BlockingGreenlightAlbyClient")
+	defer _self.ffiObject.decrementPointer()
+	_uniffiRV, _uniffiErr := rustCallWithError(FfiConverterTypeSdkError{}, func(_uniffiStatus *C.RustCallStatus) RustBufferI {
+		return C.uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_key_send(
+			_pointer, FfiConverterTypeKeySendRequestINSTANCE.Lower(request), _uniffiStatus)
+	})
+	if _uniffiErr != nil {
+		var _uniffiDefaultValue KeySendResponse
+		return _uniffiDefaultValue, _uniffiErr
+	} else {
+		return FfiConverterTypeKeySendResponseINSTANCE.Lift(_uniffiRV), _uniffiErr
+	}
+}
+
+func (_self *BlockingGreenlightAlbyClient) ListFunds(request ListFundsRequest) (ListFundsResponse, error) {
+	_pointer := _self.ffiObject.incrementPointer("*BlockingGreenlightAlbyClient")
+	defer _self.ffiObject.decrementPointer()
+	_uniffiRV, _uniffiErr := rustCallWithError(FfiConverterTypeSdkError{}, func(_uniffiStatus *C.RustCallStatus) RustBufferI {
+		return C.uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_list_funds(
+			_pointer, FfiConverterTypeListFundsRequestINSTANCE.Lower(request), _uniffiStatus)
+	})
+	if _uniffiErr != nil {
+		var _uniffiDefaultValue ListFundsResponse
+		return _uniffiDefaultValue, _uniffiErr
+	} else {
+		return FfiConverterTypeListFundsResponseINSTANCE.Lift(_uniffiRV), _uniffiErr
+	}
+}
+
 func (_self *BlockingGreenlightAlbyClient) MakeInvoice(request MakeInvoiceRequest) (MakeInvoiceResponse, error) {
 	_pointer := _self.ffiObject.incrementPointer("*BlockingGreenlightAlbyClient")
 	defer _self.ffiObject.decrementPointer()
@@ -566,6 +750,21 @@ func (_self *BlockingGreenlightAlbyClient) MakeInvoice(request MakeInvoiceReques
 		return _uniffiDefaultValue, _uniffiErr
 	} else {
 		return FfiConverterTypeMakeInvoiceResponseINSTANCE.Lift(_uniffiRV), _uniffiErr
+	}
+}
+
+func (_self *BlockingGreenlightAlbyClient) Pay(request PayRequest) (PayResponse, error) {
+	_pointer := _self.ffiObject.incrementPointer("*BlockingGreenlightAlbyClient")
+	defer _self.ffiObject.decrementPointer()
+	_uniffiRV, _uniffiErr := rustCallWithError(FfiConverterTypeSdkError{}, func(_uniffiStatus *C.RustCallStatus) RustBufferI {
+		return C.uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_pay(
+			_pointer, FfiConverterTypePayRequestINSTANCE.Lower(request), _uniffiStatus)
+	})
+	if _uniffiErr != nil {
+		var _uniffiDefaultValue PayResponse
+		return _uniffiDefaultValue, _uniffiErr
+	} else {
+		return FfiConverterTypePayResponseINSTANCE.Lift(_uniffiRV), _uniffiErr
 	}
 }
 
@@ -610,6 +809,170 @@ func (c FfiConverterBlockingGreenlightAlbyClient) Write(writer io.Writer, value 
 type FfiDestroyerBlockingGreenlightAlbyClient struct{}
 
 func (_ FfiDestroyerBlockingGreenlightAlbyClient) Destroy(value *BlockingGreenlightAlbyClient) {
+	value.Destroy()
+}
+
+type ConnectPeerRequest struct {
+	Id   string
+	Host *string
+	Port *uint16
+}
+
+func (r *ConnectPeerRequest) Destroy() {
+	FfiDestroyerString{}.Destroy(r.Id)
+	FfiDestroyerOptionalString{}.Destroy(r.Host)
+	FfiDestroyerOptionalUint16{}.Destroy(r.Port)
+}
+
+type FfiConverterTypeConnectPeerRequest struct{}
+
+var FfiConverterTypeConnectPeerRequestINSTANCE = FfiConverterTypeConnectPeerRequest{}
+
+func (c FfiConverterTypeConnectPeerRequest) Lift(rb RustBufferI) ConnectPeerRequest {
+	return LiftFromRustBuffer[ConnectPeerRequest](c, rb)
+}
+
+func (c FfiConverterTypeConnectPeerRequest) Read(reader io.Reader) ConnectPeerRequest {
+	return ConnectPeerRequest{
+		FfiConverterStringINSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
+		FfiConverterOptionalUint16INSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypeConnectPeerRequest) Lower(value ConnectPeerRequest) RustBuffer {
+	return LowerIntoRustBuffer[ConnectPeerRequest](c, value)
+}
+
+func (c FfiConverterTypeConnectPeerRequest) Write(writer io.Writer, value ConnectPeerRequest) {
+	FfiConverterStringINSTANCE.Write(writer, value.Id)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.Host)
+	FfiConverterOptionalUint16INSTANCE.Write(writer, value.Port)
+}
+
+type FfiDestroyerTypeConnectPeerRequest struct{}
+
+func (_ FfiDestroyerTypeConnectPeerRequest) Destroy(value ConnectPeerRequest) {
+	value.Destroy()
+}
+
+type ConnectPeerResponse struct {
+	Id string
+}
+
+func (r *ConnectPeerResponse) Destroy() {
+	FfiDestroyerString{}.Destroy(r.Id)
+}
+
+type FfiConverterTypeConnectPeerResponse struct{}
+
+var FfiConverterTypeConnectPeerResponseINSTANCE = FfiConverterTypeConnectPeerResponse{}
+
+func (c FfiConverterTypeConnectPeerResponse) Lift(rb RustBufferI) ConnectPeerResponse {
+	return LiftFromRustBuffer[ConnectPeerResponse](c, rb)
+}
+
+func (c FfiConverterTypeConnectPeerResponse) Read(reader io.Reader) ConnectPeerResponse {
+	return ConnectPeerResponse{
+		FfiConverterStringINSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypeConnectPeerResponse) Lower(value ConnectPeerResponse) RustBuffer {
+	return LowerIntoRustBuffer[ConnectPeerResponse](c, value)
+}
+
+func (c FfiConverterTypeConnectPeerResponse) Write(writer io.Writer, value ConnectPeerResponse) {
+	FfiConverterStringINSTANCE.Write(writer, value.Id)
+}
+
+type FfiDestroyerTypeConnectPeerResponse struct{}
+
+func (_ FfiDestroyerTypeConnectPeerResponse) Destroy(value ConnectPeerResponse) {
+	value.Destroy()
+}
+
+type FundChannelRequest struct {
+	Id         string
+	AmountMsat *uint64
+	Announce   *bool
+	Minconf    *uint32
+}
+
+func (r *FundChannelRequest) Destroy() {
+	FfiDestroyerString{}.Destroy(r.Id)
+	FfiDestroyerOptionalUint64{}.Destroy(r.AmountMsat)
+	FfiDestroyerOptionalBool{}.Destroy(r.Announce)
+	FfiDestroyerOptionalUint32{}.Destroy(r.Minconf)
+}
+
+type FfiConverterTypeFundChannelRequest struct{}
+
+var FfiConverterTypeFundChannelRequestINSTANCE = FfiConverterTypeFundChannelRequest{}
+
+func (c FfiConverterTypeFundChannelRequest) Lift(rb RustBufferI) FundChannelRequest {
+	return LiftFromRustBuffer[FundChannelRequest](c, rb)
+}
+
+func (c FfiConverterTypeFundChannelRequest) Read(reader io.Reader) FundChannelRequest {
+	return FundChannelRequest{
+		FfiConverterStringINSTANCE.Read(reader),
+		FfiConverterOptionalUint64INSTANCE.Read(reader),
+		FfiConverterOptionalBoolINSTANCE.Read(reader),
+		FfiConverterOptionalUint32INSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypeFundChannelRequest) Lower(value FundChannelRequest) RustBuffer {
+	return LowerIntoRustBuffer[FundChannelRequest](c, value)
+}
+
+func (c FfiConverterTypeFundChannelRequest) Write(writer io.Writer, value FundChannelRequest) {
+	FfiConverterStringINSTANCE.Write(writer, value.Id)
+	FfiConverterOptionalUint64INSTANCE.Write(writer, value.AmountMsat)
+	FfiConverterOptionalBoolINSTANCE.Write(writer, value.Announce)
+	FfiConverterOptionalUint32INSTANCE.Write(writer, value.Minconf)
+}
+
+type FfiDestroyerTypeFundChannelRequest struct{}
+
+func (_ FfiDestroyerTypeFundChannelRequest) Destroy(value FundChannelRequest) {
+	value.Destroy()
+}
+
+type FundChannelResponse struct {
+	Txid string
+}
+
+func (r *FundChannelResponse) Destroy() {
+	FfiDestroyerString{}.Destroy(r.Txid)
+}
+
+type FfiConverterTypeFundChannelResponse struct{}
+
+var FfiConverterTypeFundChannelResponseINSTANCE = FfiConverterTypeFundChannelResponse{}
+
+func (c FfiConverterTypeFundChannelResponse) Lift(rb RustBufferI) FundChannelResponse {
+	return LiftFromRustBuffer[FundChannelResponse](c, rb)
+}
+
+func (c FfiConverterTypeFundChannelResponse) Read(reader io.Reader) FundChannelResponse {
+	return FundChannelResponse{
+		FfiConverterStringINSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypeFundChannelResponse) Lower(value FundChannelResponse) RustBuffer {
+	return LowerIntoRustBuffer[FundChannelResponse](c, value)
+}
+
+func (c FfiConverterTypeFundChannelResponse) Write(writer io.Writer, value FundChannelResponse) {
+	FfiConverterStringINSTANCE.Write(writer, value.Txid)
+}
+
+type FfiDestroyerTypeFundChannelResponse struct{}
+
+func (_ FfiDestroyerTypeFundChannelResponse) Destroy(value FundChannelResponse) {
 	value.Destroy()
 }
 
@@ -705,6 +1068,298 @@ func (_ FfiDestroyerTypeGreenlightCredentials) Destroy(value GreenlightCredentia
 	value.Destroy()
 }
 
+type KeySendRequest struct {
+	Destination string
+	AmountMsat  *uint64
+	Label       *string
+}
+
+func (r *KeySendRequest) Destroy() {
+	FfiDestroyerString{}.Destroy(r.Destination)
+	FfiDestroyerOptionalUint64{}.Destroy(r.AmountMsat)
+	FfiDestroyerOptionalString{}.Destroy(r.Label)
+}
+
+type FfiConverterTypeKeySendRequest struct{}
+
+var FfiConverterTypeKeySendRequestINSTANCE = FfiConverterTypeKeySendRequest{}
+
+func (c FfiConverterTypeKeySendRequest) Lift(rb RustBufferI) KeySendRequest {
+	return LiftFromRustBuffer[KeySendRequest](c, rb)
+}
+
+func (c FfiConverterTypeKeySendRequest) Read(reader io.Reader) KeySendRequest {
+	return KeySendRequest{
+		FfiConverterStringINSTANCE.Read(reader),
+		FfiConverterOptionalUint64INSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypeKeySendRequest) Lower(value KeySendRequest) RustBuffer {
+	return LowerIntoRustBuffer[KeySendRequest](c, value)
+}
+
+func (c FfiConverterTypeKeySendRequest) Write(writer io.Writer, value KeySendRequest) {
+	FfiConverterStringINSTANCE.Write(writer, value.Destination)
+	FfiConverterOptionalUint64INSTANCE.Write(writer, value.AmountMsat)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.Label)
+}
+
+type FfiDestroyerTypeKeySendRequest struct{}
+
+func (_ FfiDestroyerTypeKeySendRequest) Destroy(value KeySendRequest) {
+	value.Destroy()
+}
+
+type KeySendResponse struct {
+	PaymentPreimage string
+}
+
+func (r *KeySendResponse) Destroy() {
+	FfiDestroyerString{}.Destroy(r.PaymentPreimage)
+}
+
+type FfiConverterTypeKeySendResponse struct{}
+
+var FfiConverterTypeKeySendResponseINSTANCE = FfiConverterTypeKeySendResponse{}
+
+func (c FfiConverterTypeKeySendResponse) Lift(rb RustBufferI) KeySendResponse {
+	return LiftFromRustBuffer[KeySendResponse](c, rb)
+}
+
+func (c FfiConverterTypeKeySendResponse) Read(reader io.Reader) KeySendResponse {
+	return KeySendResponse{
+		FfiConverterStringINSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypeKeySendResponse) Lower(value KeySendResponse) RustBuffer {
+	return LowerIntoRustBuffer[KeySendResponse](c, value)
+}
+
+func (c FfiConverterTypeKeySendResponse) Write(writer io.Writer, value KeySendResponse) {
+	FfiConverterStringINSTANCE.Write(writer, value.PaymentPreimage)
+}
+
+type FfiDestroyerTypeKeySendResponse struct{}
+
+func (_ FfiDestroyerTypeKeySendResponse) Destroy(value KeySendResponse) {
+	value.Destroy()
+}
+
+type ListFundsChannel struct {
+	PeerId         string
+	OurAmountMsat  *uint64
+	AmountMsat     *uint64
+	FundingTxid    string
+	FundingOutput  uint32
+	Connected      bool
+	State          int32
+	ChannelId      *string
+	ShortChannelId *string
+}
+
+func (r *ListFundsChannel) Destroy() {
+	FfiDestroyerString{}.Destroy(r.PeerId)
+	FfiDestroyerOptionalUint64{}.Destroy(r.OurAmountMsat)
+	FfiDestroyerOptionalUint64{}.Destroy(r.AmountMsat)
+	FfiDestroyerString{}.Destroy(r.FundingTxid)
+	FfiDestroyerUint32{}.Destroy(r.FundingOutput)
+	FfiDestroyerBool{}.Destroy(r.Connected)
+	FfiDestroyerInt32{}.Destroy(r.State)
+	FfiDestroyerOptionalString{}.Destroy(r.ChannelId)
+	FfiDestroyerOptionalString{}.Destroy(r.ShortChannelId)
+}
+
+type FfiConverterTypeListFundsChannel struct{}
+
+var FfiConverterTypeListFundsChannelINSTANCE = FfiConverterTypeListFundsChannel{}
+
+func (c FfiConverterTypeListFundsChannel) Lift(rb RustBufferI) ListFundsChannel {
+	return LiftFromRustBuffer[ListFundsChannel](c, rb)
+}
+
+func (c FfiConverterTypeListFundsChannel) Read(reader io.Reader) ListFundsChannel {
+	return ListFundsChannel{
+		FfiConverterStringINSTANCE.Read(reader),
+		FfiConverterOptionalUint64INSTANCE.Read(reader),
+		FfiConverterOptionalUint64INSTANCE.Read(reader),
+		FfiConverterStringINSTANCE.Read(reader),
+		FfiConverterUint32INSTANCE.Read(reader),
+		FfiConverterBoolINSTANCE.Read(reader),
+		FfiConverterInt32INSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypeListFundsChannel) Lower(value ListFundsChannel) RustBuffer {
+	return LowerIntoRustBuffer[ListFundsChannel](c, value)
+}
+
+func (c FfiConverterTypeListFundsChannel) Write(writer io.Writer, value ListFundsChannel) {
+	FfiConverterStringINSTANCE.Write(writer, value.PeerId)
+	FfiConverterOptionalUint64INSTANCE.Write(writer, value.OurAmountMsat)
+	FfiConverterOptionalUint64INSTANCE.Write(writer, value.AmountMsat)
+	FfiConverterStringINSTANCE.Write(writer, value.FundingTxid)
+	FfiConverterUint32INSTANCE.Write(writer, value.FundingOutput)
+	FfiConverterBoolINSTANCE.Write(writer, value.Connected)
+	FfiConverterInt32INSTANCE.Write(writer, value.State)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.ChannelId)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.ShortChannelId)
+}
+
+type FfiDestroyerTypeListFundsChannel struct{}
+
+func (_ FfiDestroyerTypeListFundsChannel) Destroy(value ListFundsChannel) {
+	value.Destroy()
+}
+
+type ListFundsOutput struct {
+	Txid         string
+	Output       uint32
+	AmountMsat   *uint64
+	Scriptpubkey string
+	Address      *string
+	Redeemscript *string
+	Status       int32
+	Reserved     bool
+	Blockheight  *uint32
+}
+
+func (r *ListFundsOutput) Destroy() {
+	FfiDestroyerString{}.Destroy(r.Txid)
+	FfiDestroyerUint32{}.Destroy(r.Output)
+	FfiDestroyerOptionalUint64{}.Destroy(r.AmountMsat)
+	FfiDestroyerString{}.Destroy(r.Scriptpubkey)
+	FfiDestroyerOptionalString{}.Destroy(r.Address)
+	FfiDestroyerOptionalString{}.Destroy(r.Redeemscript)
+	FfiDestroyerInt32{}.Destroy(r.Status)
+	FfiDestroyerBool{}.Destroy(r.Reserved)
+	FfiDestroyerOptionalUint32{}.Destroy(r.Blockheight)
+}
+
+type FfiConverterTypeListFundsOutput struct{}
+
+var FfiConverterTypeListFundsOutputINSTANCE = FfiConverterTypeListFundsOutput{}
+
+func (c FfiConverterTypeListFundsOutput) Lift(rb RustBufferI) ListFundsOutput {
+	return LiftFromRustBuffer[ListFundsOutput](c, rb)
+}
+
+func (c FfiConverterTypeListFundsOutput) Read(reader io.Reader) ListFundsOutput {
+	return ListFundsOutput{
+		FfiConverterStringINSTANCE.Read(reader),
+		FfiConverterUint32INSTANCE.Read(reader),
+		FfiConverterOptionalUint64INSTANCE.Read(reader),
+		FfiConverterStringINSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
+		FfiConverterInt32INSTANCE.Read(reader),
+		FfiConverterBoolINSTANCE.Read(reader),
+		FfiConverterOptionalUint32INSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypeListFundsOutput) Lower(value ListFundsOutput) RustBuffer {
+	return LowerIntoRustBuffer[ListFundsOutput](c, value)
+}
+
+func (c FfiConverterTypeListFundsOutput) Write(writer io.Writer, value ListFundsOutput) {
+	FfiConverterStringINSTANCE.Write(writer, value.Txid)
+	FfiConverterUint32INSTANCE.Write(writer, value.Output)
+	FfiConverterOptionalUint64INSTANCE.Write(writer, value.AmountMsat)
+	FfiConverterStringINSTANCE.Write(writer, value.Scriptpubkey)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.Address)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.Redeemscript)
+	FfiConverterInt32INSTANCE.Write(writer, value.Status)
+	FfiConverterBoolINSTANCE.Write(writer, value.Reserved)
+	FfiConverterOptionalUint32INSTANCE.Write(writer, value.Blockheight)
+}
+
+type FfiDestroyerTypeListFundsOutput struct{}
+
+func (_ FfiDestroyerTypeListFundsOutput) Destroy(value ListFundsOutput) {
+	value.Destroy()
+}
+
+type ListFundsRequest struct {
+	Spent *bool
+}
+
+func (r *ListFundsRequest) Destroy() {
+	FfiDestroyerOptionalBool{}.Destroy(r.Spent)
+}
+
+type FfiConverterTypeListFundsRequest struct{}
+
+var FfiConverterTypeListFundsRequestINSTANCE = FfiConverterTypeListFundsRequest{}
+
+func (c FfiConverterTypeListFundsRequest) Lift(rb RustBufferI) ListFundsRequest {
+	return LiftFromRustBuffer[ListFundsRequest](c, rb)
+}
+
+func (c FfiConverterTypeListFundsRequest) Read(reader io.Reader) ListFundsRequest {
+	return ListFundsRequest{
+		FfiConverterOptionalBoolINSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypeListFundsRequest) Lower(value ListFundsRequest) RustBuffer {
+	return LowerIntoRustBuffer[ListFundsRequest](c, value)
+}
+
+func (c FfiConverterTypeListFundsRequest) Write(writer io.Writer, value ListFundsRequest) {
+	FfiConverterOptionalBoolINSTANCE.Write(writer, value.Spent)
+}
+
+type FfiDestroyerTypeListFundsRequest struct{}
+
+func (_ FfiDestroyerTypeListFundsRequest) Destroy(value ListFundsRequest) {
+	value.Destroy()
+}
+
+type ListFundsResponse struct {
+	Outputs  []ListFundsOutput
+	Channels []ListFundsChannel
+}
+
+func (r *ListFundsResponse) Destroy() {
+	FfiDestroyerSequenceTypeListFundsOutput{}.Destroy(r.Outputs)
+	FfiDestroyerSequenceTypeListFundsChannel{}.Destroy(r.Channels)
+}
+
+type FfiConverterTypeListFundsResponse struct{}
+
+var FfiConverterTypeListFundsResponseINSTANCE = FfiConverterTypeListFundsResponse{}
+
+func (c FfiConverterTypeListFundsResponse) Lift(rb RustBufferI) ListFundsResponse {
+	return LiftFromRustBuffer[ListFundsResponse](c, rb)
+}
+
+func (c FfiConverterTypeListFundsResponse) Read(reader io.Reader) ListFundsResponse {
+	return ListFundsResponse{
+		FfiConverterSequenceTypeListFundsOutputINSTANCE.Read(reader),
+		FfiConverterSequenceTypeListFundsChannelINSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypeListFundsResponse) Lower(value ListFundsResponse) RustBuffer {
+	return LowerIntoRustBuffer[ListFundsResponse](c, value)
+}
+
+func (c FfiConverterTypeListFundsResponse) Write(writer io.Writer, value ListFundsResponse) {
+	FfiConverterSequenceTypeListFundsOutputINSTANCE.Write(writer, value.Outputs)
+	FfiConverterSequenceTypeListFundsChannelINSTANCE.Write(writer, value.Channels)
+}
+
+type FfiDestroyerTypeListFundsResponse struct{}
+
+func (_ FfiDestroyerTypeListFundsResponse) Destroy(value ListFundsResponse) {
+	value.Destroy()
+}
+
 type MakeInvoiceRequest struct {
 	AmountMsat  uint64
 	Description string
@@ -782,6 +1437,78 @@ func (c FfiConverterTypeMakeInvoiceResponse) Write(writer io.Writer, value MakeI
 type FfiDestroyerTypeMakeInvoiceResponse struct{}
 
 func (_ FfiDestroyerTypeMakeInvoiceResponse) Destroy(value MakeInvoiceResponse) {
+	value.Destroy()
+}
+
+type PayRequest struct {
+	Bolt11 string
+}
+
+func (r *PayRequest) Destroy() {
+	FfiDestroyerString{}.Destroy(r.Bolt11)
+}
+
+type FfiConverterTypePayRequest struct{}
+
+var FfiConverterTypePayRequestINSTANCE = FfiConverterTypePayRequest{}
+
+func (c FfiConverterTypePayRequest) Lift(rb RustBufferI) PayRequest {
+	return LiftFromRustBuffer[PayRequest](c, rb)
+}
+
+func (c FfiConverterTypePayRequest) Read(reader io.Reader) PayRequest {
+	return PayRequest{
+		FfiConverterStringINSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypePayRequest) Lower(value PayRequest) RustBuffer {
+	return LowerIntoRustBuffer[PayRequest](c, value)
+}
+
+func (c FfiConverterTypePayRequest) Write(writer io.Writer, value PayRequest) {
+	FfiConverterStringINSTANCE.Write(writer, value.Bolt11)
+}
+
+type FfiDestroyerTypePayRequest struct{}
+
+func (_ FfiDestroyerTypePayRequest) Destroy(value PayRequest) {
+	value.Destroy()
+}
+
+type PayResponse struct {
+	PaymentPreimage string
+}
+
+func (r *PayResponse) Destroy() {
+	FfiDestroyerString{}.Destroy(r.PaymentPreimage)
+}
+
+type FfiConverterTypePayResponse struct{}
+
+var FfiConverterTypePayResponseINSTANCE = FfiConverterTypePayResponse{}
+
+func (c FfiConverterTypePayResponse) Lift(rb RustBufferI) PayResponse {
+	return LiftFromRustBuffer[PayResponse](c, rb)
+}
+
+func (c FfiConverterTypePayResponse) Read(reader io.Reader) PayResponse {
+	return PayResponse{
+		FfiConverterStringINSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypePayResponse) Lower(value PayResponse) RustBuffer {
+	return LowerIntoRustBuffer[PayResponse](c, value)
+}
+
+func (c FfiConverterTypePayResponse) Write(writer io.Writer, value PayResponse) {
+	FfiConverterStringINSTANCE.Write(writer, value.PaymentPreimage)
+}
+
+type FfiDestroyerTypePayResponse struct{}
+
+func (_ FfiDestroyerTypePayResponse) Destroy(value PayResponse) {
 	value.Destroy()
 }
 
@@ -874,6 +1601,277 @@ func (c FfiConverterTypeSdkError) Write(writer io.Writer, value *SdkError) {
 	default:
 		_ = variantValue
 		panic(fmt.Sprintf("invalid error value `%v` in FfiConverterTypeSdkError.Write", value))
+	}
+}
+
+type FfiConverterOptionalUint16 struct{}
+
+var FfiConverterOptionalUint16INSTANCE = FfiConverterOptionalUint16{}
+
+func (c FfiConverterOptionalUint16) Lift(rb RustBufferI) *uint16 {
+	return LiftFromRustBuffer[*uint16](c, rb)
+}
+
+func (_ FfiConverterOptionalUint16) Read(reader io.Reader) *uint16 {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterUint16INSTANCE.Read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalUint16) Lower(value *uint16) RustBuffer {
+	return LowerIntoRustBuffer[*uint16](c, value)
+}
+
+func (_ FfiConverterOptionalUint16) Write(writer io.Writer, value *uint16) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterUint16INSTANCE.Write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalUint16 struct{}
+
+func (_ FfiDestroyerOptionalUint16) Destroy(value *uint16) {
+	if value != nil {
+		FfiDestroyerUint16{}.Destroy(*value)
+	}
+}
+
+type FfiConverterOptionalUint32 struct{}
+
+var FfiConverterOptionalUint32INSTANCE = FfiConverterOptionalUint32{}
+
+func (c FfiConverterOptionalUint32) Lift(rb RustBufferI) *uint32 {
+	return LiftFromRustBuffer[*uint32](c, rb)
+}
+
+func (_ FfiConverterOptionalUint32) Read(reader io.Reader) *uint32 {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterUint32INSTANCE.Read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalUint32) Lower(value *uint32) RustBuffer {
+	return LowerIntoRustBuffer[*uint32](c, value)
+}
+
+func (_ FfiConverterOptionalUint32) Write(writer io.Writer, value *uint32) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterUint32INSTANCE.Write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalUint32 struct{}
+
+func (_ FfiDestroyerOptionalUint32) Destroy(value *uint32) {
+	if value != nil {
+		FfiDestroyerUint32{}.Destroy(*value)
+	}
+}
+
+type FfiConverterOptionalUint64 struct{}
+
+var FfiConverterOptionalUint64INSTANCE = FfiConverterOptionalUint64{}
+
+func (c FfiConverterOptionalUint64) Lift(rb RustBufferI) *uint64 {
+	return LiftFromRustBuffer[*uint64](c, rb)
+}
+
+func (_ FfiConverterOptionalUint64) Read(reader io.Reader) *uint64 {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterUint64INSTANCE.Read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalUint64) Lower(value *uint64) RustBuffer {
+	return LowerIntoRustBuffer[*uint64](c, value)
+}
+
+func (_ FfiConverterOptionalUint64) Write(writer io.Writer, value *uint64) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterUint64INSTANCE.Write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalUint64 struct{}
+
+func (_ FfiDestroyerOptionalUint64) Destroy(value *uint64) {
+	if value != nil {
+		FfiDestroyerUint64{}.Destroy(*value)
+	}
+}
+
+type FfiConverterOptionalBool struct{}
+
+var FfiConverterOptionalBoolINSTANCE = FfiConverterOptionalBool{}
+
+func (c FfiConverterOptionalBool) Lift(rb RustBufferI) *bool {
+	return LiftFromRustBuffer[*bool](c, rb)
+}
+
+func (_ FfiConverterOptionalBool) Read(reader io.Reader) *bool {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterBoolINSTANCE.Read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalBool) Lower(value *bool) RustBuffer {
+	return LowerIntoRustBuffer[*bool](c, value)
+}
+
+func (_ FfiConverterOptionalBool) Write(writer io.Writer, value *bool) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterBoolINSTANCE.Write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalBool struct{}
+
+func (_ FfiDestroyerOptionalBool) Destroy(value *bool) {
+	if value != nil {
+		FfiDestroyerBool{}.Destroy(*value)
+	}
+}
+
+type FfiConverterOptionalString struct{}
+
+var FfiConverterOptionalStringINSTANCE = FfiConverterOptionalString{}
+
+func (c FfiConverterOptionalString) Lift(rb RustBufferI) *string {
+	return LiftFromRustBuffer[*string](c, rb)
+}
+
+func (_ FfiConverterOptionalString) Read(reader io.Reader) *string {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterStringINSTANCE.Read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalString) Lower(value *string) RustBuffer {
+	return LowerIntoRustBuffer[*string](c, value)
+}
+
+func (_ FfiConverterOptionalString) Write(writer io.Writer, value *string) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterStringINSTANCE.Write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalString struct{}
+
+func (_ FfiDestroyerOptionalString) Destroy(value *string) {
+	if value != nil {
+		FfiDestroyerString{}.Destroy(*value)
+	}
+}
+
+type FfiConverterSequenceTypeListFundsChannel struct{}
+
+var FfiConverterSequenceTypeListFundsChannelINSTANCE = FfiConverterSequenceTypeListFundsChannel{}
+
+func (c FfiConverterSequenceTypeListFundsChannel) Lift(rb RustBufferI) []ListFundsChannel {
+	return LiftFromRustBuffer[[]ListFundsChannel](c, rb)
+}
+
+func (c FfiConverterSequenceTypeListFundsChannel) Read(reader io.Reader) []ListFundsChannel {
+	length := readInt32(reader)
+	if length == 0 {
+		return nil
+	}
+	result := make([]ListFundsChannel, 0, length)
+	for i := int32(0); i < length; i++ {
+		result = append(result, FfiConverterTypeListFundsChannelINSTANCE.Read(reader))
+	}
+	return result
+}
+
+func (c FfiConverterSequenceTypeListFundsChannel) Lower(value []ListFundsChannel) RustBuffer {
+	return LowerIntoRustBuffer[[]ListFundsChannel](c, value)
+}
+
+func (c FfiConverterSequenceTypeListFundsChannel) Write(writer io.Writer, value []ListFundsChannel) {
+	if len(value) > math.MaxInt32 {
+		panic("[]ListFundsChannel is too large to fit into Int32")
+	}
+
+	writeInt32(writer, int32(len(value)))
+	for _, item := range value {
+		FfiConverterTypeListFundsChannelINSTANCE.Write(writer, item)
+	}
+}
+
+type FfiDestroyerSequenceTypeListFundsChannel struct{}
+
+func (FfiDestroyerSequenceTypeListFundsChannel) Destroy(sequence []ListFundsChannel) {
+	for _, value := range sequence {
+		FfiDestroyerTypeListFundsChannel{}.Destroy(value)
+	}
+}
+
+type FfiConverterSequenceTypeListFundsOutput struct{}
+
+var FfiConverterSequenceTypeListFundsOutputINSTANCE = FfiConverterSequenceTypeListFundsOutput{}
+
+func (c FfiConverterSequenceTypeListFundsOutput) Lift(rb RustBufferI) []ListFundsOutput {
+	return LiftFromRustBuffer[[]ListFundsOutput](c, rb)
+}
+
+func (c FfiConverterSequenceTypeListFundsOutput) Read(reader io.Reader) []ListFundsOutput {
+	length := readInt32(reader)
+	if length == 0 {
+		return nil
+	}
+	result := make([]ListFundsOutput, 0, length)
+	for i := int32(0); i < length; i++ {
+		result = append(result, FfiConverterTypeListFundsOutputINSTANCE.Read(reader))
+	}
+	return result
+}
+
+func (c FfiConverterSequenceTypeListFundsOutput) Lower(value []ListFundsOutput) RustBuffer {
+	return LowerIntoRustBuffer[[]ListFundsOutput](c, value)
+}
+
+func (c FfiConverterSequenceTypeListFundsOutput) Write(writer io.Writer, value []ListFundsOutput) {
+	if len(value) > math.MaxInt32 {
+		panic("[]ListFundsOutput is too large to fit into Int32")
+	}
+
+	writeInt32(writer, int32(len(value)))
+	for _, item := range value {
+		FfiConverterTypeListFundsOutputINSTANCE.Write(writer, item)
+	}
+}
+
+type FfiDestroyerSequenceTypeListFundsOutput struct{}
+
+func (FfiDestroyerSequenceTypeListFundsOutput) Destroy(sequence []ListFundsOutput) {
+	for _, value := range sequence {
+		FfiDestroyerTypeListFundsOutput{}.Destroy(value)
 	}
 }
 

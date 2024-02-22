@@ -73,12 +73,42 @@ void uniffi_glalby_bindings_fn_free_blockinggreenlightalbyclient(
 	RustCallStatus* out_status
 );
 
+RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_connect_peer(
+	void* ptr,
+	RustBuffer request,
+	RustCallStatus* out_status
+);
+
+RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_fund_channel(
+	void* ptr,
+	RustBuffer request,
+	RustCallStatus* out_status
+);
+
 RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_get_info(
 	void* ptr,
 	RustCallStatus* out_status
 );
 
+RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_key_send(
+	void* ptr,
+	RustBuffer request,
+	RustCallStatus* out_status
+);
+
+RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_list_funds(
+	void* ptr,
+	RustBuffer request,
+	RustCallStatus* out_status
+);
+
 RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_make_invoice(
+	void* ptr,
+	RustBuffer request,
+	RustCallStatus* out_status
+);
+
+RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_pay(
 	void* ptr,
 	RustBuffer request,
 	RustCallStatus* out_status
@@ -402,11 +432,31 @@ uint16_t uniffi_glalby_bindings_checksum_func_recover(
 	RustCallStatus* out_status
 );
 
+uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_connect_peer(
+	RustCallStatus* out_status
+);
+
+uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_fund_channel(
+	RustCallStatus* out_status
+);
+
 uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_get_info(
 	RustCallStatus* out_status
 );
 
+uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_key_send(
+	RustCallStatus* out_status
+);
+
+uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_list_funds(
+	RustCallStatus* out_status
+);
+
 uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_make_invoice(
+	RustCallStatus* out_status
+);
+
+uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_pay(
 	RustCallStatus* out_status
 );
 
