@@ -342,6 +342,56 @@ impl From<cln::FundchannelResponse> for FundChannelResponse {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
+pub enum NewAddressType {
+    Bech32,
+    P2tr,
+    All,
+}
+
+impl From<NewAddressType> for cln::newaddr_request::NewaddrAddresstype {
+    fn from(t: NewAddressType) -> Self {
+        match t {
+            NewAddressType::Bech32 => cln::newaddr_request::NewaddrAddresstype::Bech32,
+            NewAddressType::P2tr => cln::newaddr_request::NewaddrAddresstype::P2tr,
+            NewAddressType::All => cln::newaddr_request::NewaddrAddresstype::All,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct NewAddressRequest {
+    pub address_type: Option<NewAddressType>,
+}
+
+impl From<NewAddressRequest> for cln::NewaddrRequest {
+    fn from(req: NewAddressRequest) -> Self {
+        cln::NewaddrRequest {
+            addresstype: req
+                .address_type
+                .map(cln::newaddr_request::NewaddrAddresstype::from)
+                .map(|t| t as i32),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct NewAddressResponse {
+    pub p2tr: Option<String>,
+    pub bech32: Option<String>,
+    pub p2sh_segwit: Option<String>,
+}
+
+impl From<cln::NewaddrResponse> for NewAddressResponse {
+    fn from(response: cln::NewaddrResponse) -> Self {
+        NewAddressResponse {
+            p2tr: response.p2tr,
+            bech32: response.bech32,
+            p2sh_segwit: response.p2sh_segwit,
+        }
+    }
+}
+
 pub struct GreenlightAlbyClient {
     // signer: gl_client::signer::Signer,
     scheduler: gl_client::scheduler::Scheduler,
@@ -485,6 +535,16 @@ impl GreenlightAlbyClient {
         node.fund_channel(cln::FundchannelRequest::try_from(req)?)
             .await
             .context("failed to fund channel")
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
+    }
+
+    pub async fn new_address(&self, req: NewAddressRequest) -> Result<NewAddressResponse> {
+        let mut node = self.get_node().await?;
+
+        node.new_addr(cln::NewaddrRequest::from(req))
+            .await
+            .context("failed to request new address")
             .map_err(SdkError::greenlight_api)
             .map(|r| r.into_inner().into())
     }

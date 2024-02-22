@@ -100,6 +100,22 @@ dictionary FundChannelResponse {
   string txid;
 };
 
+enum NewAddressType {
+  "Bech32",
+  "P2tr",
+  "All",
+};
+
+dictionary NewAddressRequest {
+  NewAddressType? address_type;
+};
+
+dictionary NewAddressResponse {
+  string? p2tr;
+  string? bech32;
+  string? p2sh_segwit;
+};
+
 interface BlockingGreenlightAlbyClient {
   [Throws=SdkError]
   GetInfoResponse get_info();
@@ -121,6 +137,9 @@ interface BlockingGreenlightAlbyClient {
 
   [Throws=SdkError]
   FundChannelResponse fund_channel(FundChannelRequest request);
+
+  [Throws=SdkError]
+  NewAddressResponse new_address(NewAddressRequest request);
 };
 
 namespace glalby {
