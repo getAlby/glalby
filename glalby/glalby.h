@@ -102,7 +102,25 @@ RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_list_fu
 	RustCallStatus* out_status
 );
 
+RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_list_invoices(
+	void* ptr,
+	RustBuffer request,
+	RustCallStatus* out_status
+);
+
+RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_list_payments(
+	void* ptr,
+	RustBuffer request,
+	RustCallStatus* out_status
+);
+
 RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_make_invoice(
+	void* ptr,
+	RustBuffer request,
+	RustCallStatus* out_status
+);
+
+RustBuffer uniffi_glalby_bindings_fn_method_blockinggreenlightalbyclient_new_address(
 	void* ptr,
 	RustBuffer request,
 	RustCallStatus* out_status
@@ -452,7 +470,19 @@ uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_lis
 	RustCallStatus* out_status
 );
 
+uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_list_invoices(
+	RustCallStatus* out_status
+);
+
+uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_list_payments(
+	RustCallStatus* out_status
+);
+
 uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_make_invoice(
+	RustCallStatus* out_status
+);
+
+uint16_t uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_new_address(
 	RustCallStatus* out_status
 );
 
