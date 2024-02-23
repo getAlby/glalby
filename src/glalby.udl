@@ -22,10 +22,24 @@ dictionary MakeInvoiceRequest {
   u64 amount_msat;
   string description;
   string label;
+  u64? expiry;
+  sequence<string>? fallbacks;
+  string? preimage;
+  u32? cltv;
+  boolean? deschashonly;
 };
 
 dictionary MakeInvoiceResponse {
   string bolt11;
+  string payment_hash;
+  string payment_secret;
+  u64 expires_at;
+  u64? created_index;
+  string? warning_capacity;
+  string? warning_offline;
+  string? warning_deadends;
+  string? warning_private_unused;
+  string? warning_mpp;
 };
 
 dictionary PayRequest {

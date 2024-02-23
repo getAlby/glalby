@@ -87,11 +87,18 @@ pub struct MakeInvoiceRequest {
     pub amount_msat: u64,
     pub description: String,
     pub label: String,
+    pub expiry: Option<u64>,
+    pub fallbacks: Option<Vec<String>>,
+    pub preimage: Option<String>,
+    pub cltv: Option<u32>,
+    pub deschashonly: Option<bool>,
 }
 
-impl From<MakeInvoiceRequest> for cln::InvoiceRequest {
-    fn from(req: MakeInvoiceRequest) -> Self {
-        cln::InvoiceRequest {
+impl TryFrom<MakeInvoiceRequest> for cln::InvoiceRequest {
+    type Error = SdkError;
+
+    fn try_from(req: MakeInvoiceRequest) -> Result<Self> {
+        Ok(cln::InvoiceRequest {
             label: req.label,
             amount_msat: Some(cln::AmountOrAny {
                 value: Some(cln::amount_or_any::Value::Amount(cln::Amount {
@@ -99,20 +106,47 @@ impl From<MakeInvoiceRequest> for cln::InvoiceRequest {
                 })),
             }),
             description: req.description,
-            ..Default::default()
-        }
+            expiry: req.expiry,
+            fallbacks: req.fallbacks.unwrap_or(Vec::new()),
+            preimage: req
+                .preimage
+                .map(hex::decode)
+                .transpose()
+                .context("preimage contains invalid hex value")
+                .map_err(SdkError::invalid_arg)?,
+            cltv: req.cltv,
+            deschashonly: req.deschashonly,
+        })
     }
 }
 
 #[derive(Clone, Debug)]
 pub struct MakeInvoiceResponse {
     pub bolt11: String,
+    pub payment_hash: String,
+    pub payment_secret: String,
+    pub expires_at: u64,
+    pub created_index: Option<u64>,
+    pub warning_capacity: Option<String>,
+    pub warning_offline: Option<String>,
+    pub warning_deadends: Option<String>,
+    pub warning_private_unused: Option<String>,
+    pub warning_mpp: Option<String>,
 }
 
 impl From<cln::InvoiceResponse> for MakeInvoiceResponse {
     fn from(invoice: cln::InvoiceResponse) -> Self {
         MakeInvoiceResponse {
             bolt11: invoice.bolt11,
+            payment_hash: hex::encode(invoice.payment_hash),
+            payment_secret: hex::encode(invoice.payment_secret),
+            expires_at: invoice.expires_at,
+            created_index: invoice.created_index,
+            warning_capacity: invoice.warning_capacity,
+            warning_offline: invoice.warning_offline,
+            warning_deadends: invoice.warning_deadends,
+            warning_private_unused: invoice.warning_private_unused,
+            warning_mpp: invoice.warning_mpp,
         }
     }
 }
@@ -738,7 +772,7 @@ impl GreenlightAlbyClient {
     pub async fn make_invoice(&self, req: MakeInvoiceRequest) -> Result<MakeInvoiceResponse> {
         let mut node = self.get_node().await?;
 
-        node.invoice(cln::InvoiceRequest::from(req))
+        node.invoice(cln::InvoiceRequest::try_from(req)?)
             .await
             .context("failed to make invoice")
             .map_err(SdkError::greenlight_api)
