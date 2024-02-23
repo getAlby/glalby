@@ -145,10 +145,30 @@ impl From<cln::PayResponse> for PayResponse {
 }
 
 #[derive(Clone, Debug)]
+pub struct TlvEntry {
+    pub ty: u64,
+    pub value: String,
+}
+
+impl TryFrom<TlvEntry> for cln::TlvEntry {
+    type Error = SdkError;
+
+    fn try_from(entry: TlvEntry) -> Result<Self> {
+        Ok(cln::TlvEntry {
+            r#type: entry.ty,
+            value: hex::decode(entry.value)
+                .context("TLV entry value contains invalid hex value")
+                .map_err(SdkError::invalid_arg)?,
+        })
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct KeySendRequest {
     pub destination: String,
     pub amount_msat: Option<u64>,
     pub label: Option<String>,
+    pub extra_tlvs: Option<Vec<TlvEntry>>,
 }
 
 impl TryFrom<KeySendRequest> for cln::KeysendRequest {
@@ -158,10 +178,18 @@ impl TryFrom<KeySendRequest> for cln::KeysendRequest {
         Ok(cln::KeysendRequest {
             destination: hex::decode(req.destination)
                 .context("destination contains invalid hex value")
-                .map_err(SdkError::invalid_arg)?
-                .into(),
+                .map_err(SdkError::invalid_arg)?,
             amount_msat: req.amount_msat.map(|a| cln::Amount { msat: a }),
             label: req.label,
+            extratlvs: req
+                .extra_tlvs
+                .map(|tlvs| {
+                    tlvs.into_iter()
+                        .map(cln::TlvEntry::try_from)
+                        .collect::<Result<_>>()
+                })
+                .transpose()?
+                .map(|tlvs| cln::TlvStream { entries: tlvs }),
             ..Default::default()
         })
     }
@@ -317,8 +345,7 @@ impl TryFrom<FundChannelRequest> for cln::FundchannelRequest {
         Ok(cln::FundchannelRequest {
             id: hex::decode(req.id)
                 .context("channel id contains invalid hex value")
-                .map_err(SdkError::invalid_arg)?
-                .into(),
+                .map_err(SdkError::invalid_arg)?,
             amount: req.amount_msat.map(|a| cln::AmountOrAll {
                 value: Some(cln::amount_or_all::Value::Amount(cln::Amount { msat: a })),
             }),

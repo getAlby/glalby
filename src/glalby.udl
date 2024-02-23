@@ -36,10 +36,16 @@ dictionary PayResponse {
   string preimage;
 };
 
+dictionary TlvEntry {
+  u64 ty;
+  string value;
+};
+
 dictionary KeySendRequest {
   string destination;
   u64? amount_msat;
   string? label;
+  sequence<TlvEntry>? extra_tlvs;
 };
 
 dictionary KeySendResponse {
