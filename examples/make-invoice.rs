@@ -11,6 +11,11 @@ fn main() {
             amount_msat: 1000,
             description: String::from("Test description"),
             label: rand::random::<u64>().to_string(),
+            cltv: None,
+            expiry: None,
+            fallbacks: None,
+            preimage: None,
+            deschashonly: None,
         })
         .unwrap();
 

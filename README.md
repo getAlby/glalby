@@ -21,6 +21,12 @@ Note: Examples require an already-registered node
 MNEMONIC="YOUR TWELVE WORD MNEMONIC HERE" cargo run --bin get-info
 ```
 
+### MakeInvoice
+
+```sh
+MNEMONIC="YOUR TWELVE WORD MNEMONIC HERE" cargo run --bin make-invoice
+```
+
 ## Generate bindings
 
 ```sh
