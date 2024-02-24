@@ -1144,12 +1144,14 @@ type KeySendRequest struct {
 	Destination string
 	AmountMsat  *uint64
 	Label       *string
+	ExtraTlvs   *[]TlvEntry
 }
 
 func (r *KeySendRequest) Destroy() {
 	FfiDestroyerString{}.Destroy(r.Destination)
 	FfiDestroyerOptionalUint64{}.Destroy(r.AmountMsat)
 	FfiDestroyerOptionalString{}.Destroy(r.Label)
+	FfiDestroyerOptionalSequenceTypeTlvEntry{}.Destroy(r.ExtraTlvs)
 }
 
 type FfiConverterTypeKeySendRequest struct{}
@@ -1165,6 +1167,7 @@ func (c FfiConverterTypeKeySendRequest) Read(reader io.Reader) KeySendRequest {
 		FfiConverterStringINSTANCE.Read(reader),
 		FfiConverterOptionalUint64INSTANCE.Read(reader),
 		FfiConverterOptionalStringINSTANCE.Read(reader),
+		FfiConverterOptionalSequenceTypeTlvEntryINSTANCE.Read(reader),
 	}
 }
 
@@ -1176,6 +1179,7 @@ func (c FfiConverterTypeKeySendRequest) Write(writer io.Writer, value KeySendReq
 	FfiConverterStringINSTANCE.Write(writer, value.Destination)
 	FfiConverterOptionalUint64INSTANCE.Write(writer, value.AmountMsat)
 	FfiConverterOptionalStringINSTANCE.Write(writer, value.Label)
+	FfiConverterOptionalSequenceTypeTlvEntryINSTANCE.Write(writer, value.ExtraTlvs)
 }
 
 type FfiDestroyerTypeKeySendRequest struct{}
@@ -1837,15 +1841,25 @@ func (_ FfiDestroyerTypeListPaymentsResponse) Destroy(value ListPaymentsResponse
 }
 
 type MakeInvoiceRequest struct {
-	AmountMsat  uint64
-	Description string
-	Label       string
+	AmountMsat   uint64
+	Description  string
+	Label        string
+	Expiry       *uint64
+	Fallbacks    *[]string
+	Preimage     *string
+	Cltv         *uint32
+	Deschashonly *bool
 }
 
 func (r *MakeInvoiceRequest) Destroy() {
 	FfiDestroyerUint64{}.Destroy(r.AmountMsat)
 	FfiDestroyerString{}.Destroy(r.Description)
 	FfiDestroyerString{}.Destroy(r.Label)
+	FfiDestroyerOptionalUint64{}.Destroy(r.Expiry)
+	FfiDestroyerOptionalSequenceString{}.Destroy(r.Fallbacks)
+	FfiDestroyerOptionalString{}.Destroy(r.Preimage)
+	FfiDestroyerOptionalUint32{}.Destroy(r.Cltv)
+	FfiDestroyerOptionalBool{}.Destroy(r.Deschashonly)
 }
 
 type FfiConverterTypeMakeInvoiceRequest struct{}
@@ -1861,6 +1875,11 @@ func (c FfiConverterTypeMakeInvoiceRequest) Read(reader io.Reader) MakeInvoiceRe
 		FfiConverterUint64INSTANCE.Read(reader),
 		FfiConverterStringINSTANCE.Read(reader),
 		FfiConverterStringINSTANCE.Read(reader),
+		FfiConverterOptionalUint64INSTANCE.Read(reader),
+		FfiConverterOptionalSequenceStringINSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
+		FfiConverterOptionalUint32INSTANCE.Read(reader),
+		FfiConverterOptionalBoolINSTANCE.Read(reader),
 	}
 }
 
@@ -1872,6 +1891,11 @@ func (c FfiConverterTypeMakeInvoiceRequest) Write(writer io.Writer, value MakeIn
 	FfiConverterUint64INSTANCE.Write(writer, value.AmountMsat)
 	FfiConverterStringINSTANCE.Write(writer, value.Description)
 	FfiConverterStringINSTANCE.Write(writer, value.Label)
+	FfiConverterOptionalUint64INSTANCE.Write(writer, value.Expiry)
+	FfiConverterOptionalSequenceStringINSTANCE.Write(writer, value.Fallbacks)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.Preimage)
+	FfiConverterOptionalUint32INSTANCE.Write(writer, value.Cltv)
+	FfiConverterOptionalBoolINSTANCE.Write(writer, value.Deschashonly)
 }
 
 type FfiDestroyerTypeMakeInvoiceRequest struct{}
@@ -1881,11 +1905,29 @@ func (_ FfiDestroyerTypeMakeInvoiceRequest) Destroy(value MakeInvoiceRequest) {
 }
 
 type MakeInvoiceResponse struct {
-	Bolt11 string
+	Bolt11               string
+	PaymentHash          string
+	PaymentSecret        string
+	ExpiresAt            uint64
+	CreatedIndex         *uint64
+	WarningCapacity      *string
+	WarningOffline       *string
+	WarningDeadends      *string
+	WarningPrivateUnused *string
+	WarningMpp           *string
 }
 
 func (r *MakeInvoiceResponse) Destroy() {
 	FfiDestroyerString{}.Destroy(r.Bolt11)
+	FfiDestroyerString{}.Destroy(r.PaymentHash)
+	FfiDestroyerString{}.Destroy(r.PaymentSecret)
+	FfiDestroyerUint64{}.Destroy(r.ExpiresAt)
+	FfiDestroyerOptionalUint64{}.Destroy(r.CreatedIndex)
+	FfiDestroyerOptionalString{}.Destroy(r.WarningCapacity)
+	FfiDestroyerOptionalString{}.Destroy(r.WarningOffline)
+	FfiDestroyerOptionalString{}.Destroy(r.WarningDeadends)
+	FfiDestroyerOptionalString{}.Destroy(r.WarningPrivateUnused)
+	FfiDestroyerOptionalString{}.Destroy(r.WarningMpp)
 }
 
 type FfiConverterTypeMakeInvoiceResponse struct{}
@@ -1899,6 +1941,15 @@ func (c FfiConverterTypeMakeInvoiceResponse) Lift(rb RustBufferI) MakeInvoiceRes
 func (c FfiConverterTypeMakeInvoiceResponse) Read(reader io.Reader) MakeInvoiceResponse {
 	return MakeInvoiceResponse{
 		FfiConverterStringINSTANCE.Read(reader),
+		FfiConverterStringINSTANCE.Read(reader),
+		FfiConverterStringINSTANCE.Read(reader),
+		FfiConverterUint64INSTANCE.Read(reader),
+		FfiConverterOptionalUint64INSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
+		FfiConverterOptionalStringINSTANCE.Read(reader),
 	}
 }
 
@@ -1908,6 +1959,15 @@ func (c FfiConverterTypeMakeInvoiceResponse) Lower(value MakeInvoiceResponse) Ru
 
 func (c FfiConverterTypeMakeInvoiceResponse) Write(writer io.Writer, value MakeInvoiceResponse) {
 	FfiConverterStringINSTANCE.Write(writer, value.Bolt11)
+	FfiConverterStringINSTANCE.Write(writer, value.PaymentHash)
+	FfiConverterStringINSTANCE.Write(writer, value.PaymentSecret)
+	FfiConverterUint64INSTANCE.Write(writer, value.ExpiresAt)
+	FfiConverterOptionalUint64INSTANCE.Write(writer, value.CreatedIndex)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.WarningCapacity)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.WarningOffline)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.WarningDeadends)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.WarningPrivateUnused)
+	FfiConverterOptionalStringINSTANCE.Write(writer, value.WarningMpp)
 }
 
 type FfiDestroyerTypeMakeInvoiceResponse struct{}
@@ -2065,6 +2125,46 @@ func (c FfiConverterTypePayResponse) Write(writer io.Writer, value PayResponse) 
 type FfiDestroyerTypePayResponse struct{}
 
 func (_ FfiDestroyerTypePayResponse) Destroy(value PayResponse) {
+	value.Destroy()
+}
+
+type TlvEntry struct {
+	Ty    uint64
+	Value string
+}
+
+func (r *TlvEntry) Destroy() {
+	FfiDestroyerUint64{}.Destroy(r.Ty)
+	FfiDestroyerString{}.Destroy(r.Value)
+}
+
+type FfiConverterTypeTlvEntry struct{}
+
+var FfiConverterTypeTlvEntryINSTANCE = FfiConverterTypeTlvEntry{}
+
+func (c FfiConverterTypeTlvEntry) Lift(rb RustBufferI) TlvEntry {
+	return LiftFromRustBuffer[TlvEntry](c, rb)
+}
+
+func (c FfiConverterTypeTlvEntry) Read(reader io.Reader) TlvEntry {
+	return TlvEntry{
+		FfiConverterUint64INSTANCE.Read(reader),
+		FfiConverterStringINSTANCE.Read(reader),
+	}
+}
+
+func (c FfiConverterTypeTlvEntry) Lower(value TlvEntry) RustBuffer {
+	return LowerIntoRustBuffer[TlvEntry](c, value)
+}
+
+func (c FfiConverterTypeTlvEntry) Write(writer io.Writer, value TlvEntry) {
+	FfiConverterUint64INSTANCE.Write(writer, value.Ty)
+	FfiConverterStringINSTANCE.Write(writer, value.Value)
+}
+
+type FfiDestroyerTypeTlvEntry struct{}
+
+func (_ FfiDestroyerTypeTlvEntry) Destroy(value TlvEntry) {
 	value.Destroy()
 }
 
@@ -2591,6 +2691,123 @@ func (_ FfiDestroyerOptionalTypeNewAddressType) Destroy(value *NewAddressType) {
 	}
 }
 
+type FfiConverterOptionalSequenceString struct{}
+
+var FfiConverterOptionalSequenceStringINSTANCE = FfiConverterOptionalSequenceString{}
+
+func (c FfiConverterOptionalSequenceString) Lift(rb RustBufferI) *[]string {
+	return LiftFromRustBuffer[*[]string](c, rb)
+}
+
+func (_ FfiConverterOptionalSequenceString) Read(reader io.Reader) *[]string {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterSequenceStringINSTANCE.Read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalSequenceString) Lower(value *[]string) RustBuffer {
+	return LowerIntoRustBuffer[*[]string](c, value)
+}
+
+func (_ FfiConverterOptionalSequenceString) Write(writer io.Writer, value *[]string) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterSequenceStringINSTANCE.Write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalSequenceString struct{}
+
+func (_ FfiDestroyerOptionalSequenceString) Destroy(value *[]string) {
+	if value != nil {
+		FfiDestroyerSequenceString{}.Destroy(*value)
+	}
+}
+
+type FfiConverterOptionalSequenceTypeTlvEntry struct{}
+
+var FfiConverterOptionalSequenceTypeTlvEntryINSTANCE = FfiConverterOptionalSequenceTypeTlvEntry{}
+
+func (c FfiConverterOptionalSequenceTypeTlvEntry) Lift(rb RustBufferI) *[]TlvEntry {
+	return LiftFromRustBuffer[*[]TlvEntry](c, rb)
+}
+
+func (_ FfiConverterOptionalSequenceTypeTlvEntry) Read(reader io.Reader) *[]TlvEntry {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterSequenceTypeTlvEntryINSTANCE.Read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalSequenceTypeTlvEntry) Lower(value *[]TlvEntry) RustBuffer {
+	return LowerIntoRustBuffer[*[]TlvEntry](c, value)
+}
+
+func (_ FfiConverterOptionalSequenceTypeTlvEntry) Write(writer io.Writer, value *[]TlvEntry) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterSequenceTypeTlvEntryINSTANCE.Write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalSequenceTypeTlvEntry struct{}
+
+func (_ FfiDestroyerOptionalSequenceTypeTlvEntry) Destroy(value *[]TlvEntry) {
+	if value != nil {
+		FfiDestroyerSequenceTypeTlvEntry{}.Destroy(*value)
+	}
+}
+
+type FfiConverterSequenceString struct{}
+
+var FfiConverterSequenceStringINSTANCE = FfiConverterSequenceString{}
+
+func (c FfiConverterSequenceString) Lift(rb RustBufferI) []string {
+	return LiftFromRustBuffer[[]string](c, rb)
+}
+
+func (c FfiConverterSequenceString) Read(reader io.Reader) []string {
+	length := readInt32(reader)
+	if length == 0 {
+		return nil
+	}
+	result := make([]string, 0, length)
+	for i := int32(0); i < length; i++ {
+		result = append(result, FfiConverterStringINSTANCE.Read(reader))
+	}
+	return result
+}
+
+func (c FfiConverterSequenceString) Lower(value []string) RustBuffer {
+	return LowerIntoRustBuffer[[]string](c, value)
+}
+
+func (c FfiConverterSequenceString) Write(writer io.Writer, value []string) {
+	if len(value) > math.MaxInt32 {
+		panic("[]string is too large to fit into Int32")
+	}
+
+	writeInt32(writer, int32(len(value)))
+	for _, item := range value {
+		FfiConverterStringINSTANCE.Write(writer, item)
+	}
+}
+
+type FfiDestroyerSequenceString struct{}
+
+func (FfiDestroyerSequenceString) Destroy(sequence []string) {
+	for _, value := range sequence {
+		FfiDestroyerString{}.Destroy(value)
+	}
+}
+
 type FfiConverterSequenceTypeListFundsChannel struct{}
 
 var FfiConverterSequenceTypeListFundsChannelINSTANCE = FfiConverterSequenceTypeListFundsChannel{}
@@ -2760,6 +2977,49 @@ type FfiDestroyerSequenceTypeListPaymentsPayment struct{}
 func (FfiDestroyerSequenceTypeListPaymentsPayment) Destroy(sequence []ListPaymentsPayment) {
 	for _, value := range sequence {
 		FfiDestroyerTypeListPaymentsPayment{}.Destroy(value)
+	}
+}
+
+type FfiConverterSequenceTypeTlvEntry struct{}
+
+var FfiConverterSequenceTypeTlvEntryINSTANCE = FfiConverterSequenceTypeTlvEntry{}
+
+func (c FfiConverterSequenceTypeTlvEntry) Lift(rb RustBufferI) []TlvEntry {
+	return LiftFromRustBuffer[[]TlvEntry](c, rb)
+}
+
+func (c FfiConverterSequenceTypeTlvEntry) Read(reader io.Reader) []TlvEntry {
+	length := readInt32(reader)
+	if length == 0 {
+		return nil
+	}
+	result := make([]TlvEntry, 0, length)
+	for i := int32(0); i < length; i++ {
+		result = append(result, FfiConverterTypeTlvEntryINSTANCE.Read(reader))
+	}
+	return result
+}
+
+func (c FfiConverterSequenceTypeTlvEntry) Lower(value []TlvEntry) RustBuffer {
+	return LowerIntoRustBuffer[[]TlvEntry](c, value)
+}
+
+func (c FfiConverterSequenceTypeTlvEntry) Write(writer io.Writer, value []TlvEntry) {
+	if len(value) > math.MaxInt32 {
+		panic("[]TlvEntry is too large to fit into Int32")
+	}
+
+	writeInt32(writer, int32(len(value)))
+	for _, item := range value {
+		FfiConverterTypeTlvEntryINSTANCE.Write(writer, item)
+	}
+}
+
+type FfiDestroyerSequenceTypeTlvEntry struct{}
+
+func (FfiDestroyerSequenceTypeTlvEntry) Destroy(sequence []TlvEntry) {
+	for _, value := range sequence {
+		FfiDestroyerTypeTlvEntry{}.Destroy(value)
 	}
 }
 
