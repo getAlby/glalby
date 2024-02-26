@@ -251,4 +251,7 @@ namespace glalby {
 
   [Throws=SdkError]
   GreenlightCredentials recover(string mnemonic);
+  
+  [Throws=SdkError]
+  GreenlightCredentials register(string mnemonic, string invite_code);
 };

@@ -59,6 +59,15 @@ impl From<scheduler::RecoveryResponse> for GreenlightCredentials {
     }
 }
 
+impl From<scheduler::RegistrationResponse> for GreenlightCredentials {
+    fn from(registration: scheduler::RegistrationResponse) -> Self {
+        GreenlightCredentials {
+            device_cert: registration.device_cert,
+            device_key: registration.device_key,
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct GetInfoResponse {
     pub pubkey: String,
@@ -710,6 +719,34 @@ pub async fn recover(mnemonic: String) -> Result<GreenlightCredentials> {
 
     Ok(scheduler
         .recover(&signer)
+        .await
+        .context("failed to recover credentials")
+        .map_err(SdkError::greenlight_api)?
+        .into())
+}
+
+pub async fn register(mnemonic: String, invite_code: String) -> Result<GreenlightCredentials> {
+    let mnemonic = Mnemonic::from_str(&mnemonic)
+        .context("failed to parse mnemonic")
+        .map_err(SdkError::invalid_arg)?;
+
+    let secret = mnemonic.to_seed("")[0..32].to_vec(); // Only need the first 32 bytes
+
+    let tls = TlsConfig::new()
+        .context("failed to create TLS config")
+        .map_err(SdkError::greenlight_api)?;
+
+    let signer = Signer::new(secret, Network::Bitcoin, tls)
+        .context("failed to create signer")
+        .map_err(SdkError::greenlight_api)?;
+
+    let scheduler = Scheduler::new(signer.node_id(), Network::Bitcoin)
+        .await
+        .context("failed to create scheduler")
+        .map_err(SdkError::greenlight_api)?;
+
+    Ok(scheduler
+        .register(&signer, Some(invite_code))
         .await
         .context("failed to recover credentials")
         .map_err(SdkError::greenlight_api)?

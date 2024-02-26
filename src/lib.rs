@@ -69,6 +69,10 @@ pub fn recover(mnemonic: String) -> Result<GreenlightCredentials> {
     rt().block_on(greenlight_alby_client::recover(mnemonic))
 }
 
+pub fn register(mnemonic: String, invite_code: String) -> Result<GreenlightCredentials> {
+    rt().block_on(greenlight_alby_client::register(mnemonic, invite_code))
+}
+
 pub fn new_blocking_greenlight_alby_client(
     mnemonic: String,
     credentials: GreenlightCredentials,

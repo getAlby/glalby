@@ -364,6 +364,15 @@ func uniffiCheckChecksums() {
 	}
 	{
 		checksum := rustCall(func(uniffiStatus *C.RustCallStatus) C.uint16_t {
+			return C.uniffi_glalby_bindings_checksum_func_register(uniffiStatus)
+		})
+		if checksum != 61263 {
+			// If this happens try cleaning and rebuilding your project
+			panic("glalby: uniffi_glalby_bindings_checksum_func_register: UniFFI API checksum mismatch")
+		}
+	}
+	{
+		checksum := rustCall(func(uniffiStatus *C.RustCallStatus) C.uint16_t {
 			return C.uniffi_glalby_bindings_checksum_method_blockinggreenlightalbyclient_connect_peer(uniffiStatus)
 		})
 		if checksum != 50417 {
@@ -3038,6 +3047,18 @@ func NewBlockingGreenlightAlbyClient(mnemonic string, credentials GreenlightCred
 func Recover(mnemonic string) (GreenlightCredentials, error) {
 	_uniffiRV, _uniffiErr := rustCallWithError(FfiConverterTypeSdkError{}, func(_uniffiStatus *C.RustCallStatus) RustBufferI {
 		return C.uniffi_glalby_bindings_fn_func_recover(FfiConverterStringINSTANCE.Lower(mnemonic), _uniffiStatus)
+	})
+	if _uniffiErr != nil {
+		var _uniffiDefaultValue GreenlightCredentials
+		return _uniffiDefaultValue, _uniffiErr
+	} else {
+		return FfiConverterTypeGreenlightCredentialsINSTANCE.Lift(_uniffiRV), _uniffiErr
+	}
+}
+
+func Register(mnemonic string, inviteCode string) (GreenlightCredentials, error) {
+	_uniffiRV, _uniffiErr := rustCallWithError(FfiConverterTypeSdkError{}, func(_uniffiStatus *C.RustCallStatus) RustBufferI {
+		return C.uniffi_glalby_bindings_fn_func_register(FfiConverterStringINSTANCE.Lower(mnemonic), FfiConverterStringINSTANCE.Lower(inviteCode), _uniffiStatus)
 	})
 	if _uniffiErr != nil {
 		var _uniffiDefaultValue GreenlightCredentials

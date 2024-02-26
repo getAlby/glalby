@@ -143,6 +143,12 @@ RustBuffer uniffi_glalby_bindings_fn_func_recover(
 	RustCallStatus* out_status
 );
 
+RustBuffer uniffi_glalby_bindings_fn_func_register(
+	RustBuffer mnemonic,
+	RustBuffer invite_code,
+	RustCallStatus* out_status
+);
+
 RustBuffer ffi_glalby_bindings_rustbuffer_alloc(
 	int32_t size,
 	RustCallStatus* out_status
@@ -447,6 +453,10 @@ uint16_t uniffi_glalby_bindings_checksum_func_new_blocking_greenlight_alby_clien
 );
 
 uint16_t uniffi_glalby_bindings_checksum_func_recover(
+	RustCallStatus* out_status
+);
+
+uint16_t uniffi_glalby_bindings_checksum_func_register(
 	RustCallStatus* out_status
 );
 
