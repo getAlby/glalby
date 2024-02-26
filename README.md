@@ -54,7 +54,7 @@ GL_CUSTOM_NOBODY_KEY=/PATH/TO/glalby/gl-certs/client-key.pem GL_CUSTOM_NOBODY_CE
 
 In NWC:
 
-`go get github.com/getAlby/glalby@go-package` (TODO: update branch)
+`go get github.com/getAlby/glalby`
 
 And in the code import from `"github.com/getAlby/glalby/glalby"`
 
