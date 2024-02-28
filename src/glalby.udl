@@ -1,4 +1,257 @@
+[Error]
+enum SdkError {
+  "GreenlightApi",
+  "InvalidArgument",
+  //"Other",
+};
+
+dictionary GreenlightCredentials {
+  string device_key;
+  string device_cert;
+};
+
+dictionary GetInfoResponse {
+  string pubkey;
+  string alias;
+  string color;
+  string network;
+  u32 block_height;
+};
+
+dictionary MakeInvoiceRequest {
+  u64 amount_msat;
+  string description;
+  string label;
+  u64? expiry;
+  sequence<string>? fallbacks;
+  string? preimage;
+  u32? cltv;
+  boolean? deschashonly;
+};
+
+dictionary MakeInvoiceResponse {
+  string bolt11;
+  string payment_hash;
+  string payment_secret;
+  u64 expires_at;
+  u64? created_index;
+  string? warning_capacity;
+  string? warning_offline;
+  string? warning_deadends;
+  string? warning_private_unused;
+  string? warning_mpp;
+};
+
+dictionary PayRequest {
+  string bolt11;
+};
+
+dictionary PayResponse {
+  string preimage;
+};
+
+dictionary TlvEntry {
+  u64 ty;
+  string value;
+};
+
+dictionary KeySendRequest {
+  string destination;
+  u64? amount_msat;
+  string? label;
+  sequence<TlvEntry>? extra_tlvs;
+};
+
+dictionary KeySendResponse {
+  string payment_preimage;
+};
+
+dictionary ListFundsRequest {
+  boolean? spent;
+};
+
+dictionary ListFundsOutput {
+  string txid;
+  u32 output;
+  u64? amount_msat;
+  string scriptpubkey;
+  string? address;
+  string? redeemscript;
+  i32 status;
+  boolean reserved;
+  u32? blockheight;
+};
+
+dictionary ListFundsChannel {
+  string peer_id;
+  u64? our_amount_msat;
+  u64? amount_msat;
+  string funding_txid;
+  u32 funding_output;
+  boolean connected;
+  i32 state;
+  string? channel_id;
+  string? short_channel_id;
+};
+
+dictionary ListFundsResponse {
+  sequence<ListFundsOutput> outputs;
+  sequence<ListFundsChannel> channels;
+};
+
+dictionary ConnectPeerRequest {
+  string id;
+  string? host;
+  u16? port;
+};
+
+dictionary ConnectPeerResponse {
+  string id;
+};
+
+dictionary FundChannelRequest {
+  string id;
+  u64? amount_msat;
+  boolean? announce;
+  u32? minconf;
+};
+
+dictionary FundChannelResponse {
+  string txid;
+};
+
+enum NewAddressType {
+  "Bech32",
+  "P2tr",
+  "All",
+};
+
+dictionary NewAddressRequest {
+  NewAddressType? address_type;
+};
+
+dictionary NewAddressResponse {
+  string? p2tr;
+  string? bech32;
+  string? p2sh_segwit;
+};
+
+enum ListInvoicesIndex {
+  "Created",
+  "Updated",
+};
+
+dictionary ListInvoicesRequest {
+  string? label;
+  string? invstring;
+  string? payment_hash;
+  string? offer_id;
+  ListInvoicesIndex? index;
+  u64? start;
+  u32? limit;
+};
+
+dictionary ListInvoicesInvoicePaidOutpoint {
+  string? txid;
+  u32? outnum;
+};
+
+dictionary ListInvoicesInvoice {
+  string label;
+  string? description;
+  string payment_hash;
+  i32 status;
+  u64 expires_at;
+  u64? amount_msat;
+  string? bolt11;
+  string? bolt12;
+  string? local_offer_id;
+  string? invreq_payer_note;
+  u64? created_index;
+  u64? updated_index;
+  u64? pay_index;
+  u64? amount_received_msat;
+  u64? paid_at;
+  ListInvoicesInvoicePaidOutpoint? paid_outpoint;
+  string? payment_preimage;
+};
+
+dictionary ListInvoicesResponse {
+  sequence<ListInvoicesInvoice> invoices;
+};
+
+enum ListPaymentsStatus {
+  "Pending",
+  "Complete",
+  "Failed",
+};
+
+dictionary ListPaymentsRequest {
+  string? bolt11;
+  string? payment_hash;
+  ListPaymentsStatus? status;
+};
+
+dictionary ListPaymentsPayment {
+  string payment_hash;
+  i32 status;
+  string? destination;
+  u64 created_at;
+  u64? completed_at;
+  string? label;
+  string? bolt11;
+  string? description;
+  string? bolt12;
+  u64? amount_msat;
+  u64? amount_sent_msat;
+  string? preimage;
+  u64? number_of_parts;
+  string? erroronion;
+};
+
+dictionary ListPaymentsResponse {
+  sequence<ListPaymentsPayment> payments;
+};
+
+interface BlockingGreenlightAlbyClient {
+  [Throws=SdkError]
+  GetInfoResponse get_info();
+
+  [Throws=SdkError]
+  MakeInvoiceResponse make_invoice(MakeInvoiceRequest request);
+
+  [Throws=SdkError]
+  PayResponse pay(PayRequest request);
+
+  [Throws=SdkError]
+  KeySendResponse key_send(KeySendRequest request);
+
+  [Throws=SdkError]
+  ListFundsResponse list_funds(ListFundsRequest request);
+
+  [Throws=SdkError]
+  ConnectPeerResponse connect_peer(ConnectPeerRequest request);
+
+  [Throws=SdkError]
+  FundChannelResponse fund_channel(FundChannelRequest request);
+
+  [Throws=SdkError]
+  NewAddressResponse new_address(NewAddressRequest request);
+
+  [Throws=SdkError]
+  ListInvoicesResponse list_invoices(ListInvoicesRequest request);
+
+  [Throws=SdkError]
+  ListPaymentsResponse list_payments(ListPaymentsRequest request);
+};
+
 namespace glalby {
-  boolean equal(u64 a, u64 b);
-  string get_info(string mnemonic);
+  [Throws=SdkError]
+  BlockingGreenlightAlbyClient new_blocking_greenlight_alby_client(string mnemonic, GreenlightCredentials credentials);
+
+  [Throws=SdkError]
+  GreenlightCredentials recover(string mnemonic);
+  
+  [Throws=SdkError]
+  GreenlightCredentials register(string mnemonic, string invite_code);
 };

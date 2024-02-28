@@ -1,62 +1,94 @@
-use std::str::FromStr;
-
-use gl_client::bitcoin::Network;
-use gl_client::pb::cln;
-use gl_client::scheduler::Scheduler;
-use gl_client::signer::model::greenlight::scheduler;
-use gl_client::signer::Signer;
-use gl_client::tls::TlsConfig;
-
-use bip39::Mnemonic;
+use std::sync::Arc;
 
 use once_cell::sync::Lazy;
+
+mod greenlight_alby_client;
+use greenlight_alby_client::{
+    new_greenlight_alby_client, GreenlightAlbyClient, GreenlightCredentials, Result, SdkError,
+};
+
+pub use greenlight_alby_client::{
+    ConnectPeerRequest, ConnectPeerResponse, FundChannelRequest, FundChannelResponse,
+    GetInfoResponse, KeySendRequest, KeySendResponse, ListFundsChannel, ListFundsOutput,
+    ListFundsRequest, ListFundsResponse, ListInvoicesIndex, ListInvoicesInvoice,
+    ListInvoicesInvoicePaidOutpoint, ListInvoicesRequest, ListInvoicesResponse,
+    ListPaymentsPayment, ListPaymentsRequest, ListPaymentsResponse, ListPaymentsStatus,
+    MakeInvoiceRequest, MakeInvoiceResponse, NewAddressRequest, NewAddressResponse, NewAddressType,
+    PayRequest, PayResponse, TlvEntry,
+};
+
 static RT: Lazy<tokio::runtime::Runtime> = Lazy::new(|| tokio::runtime::Runtime::new().unwrap());
 
-pub fn equal(a: u64, b: u64) -> bool {
-    a == b
+pub struct BlockingGreenlightAlbyClient {
+    greenlight_alby_client: Arc<GreenlightAlbyClient>,
 }
 
-// TODO: add a proper Init() and then we can call methods on the service like GetInfo()
+impl BlockingGreenlightAlbyClient {
+    pub fn get_info(&self) -> Result<GetInfoResponse> {
+        rt().block_on(self.greenlight_alby_client.get_info())
+    }
 
-// this is just an example, the request and response types are wrong
-pub fn get_info(mnemonic: std::string::String) -> std::string::String {
-    rt().block_on(get_info_async(mnemonic))
+    pub fn make_invoice(&self, req: MakeInvoiceRequest) -> Result<MakeInvoiceResponse> {
+        rt().block_on(self.greenlight_alby_client.make_invoice(req))
+    }
+
+    pub fn pay(&self, req: PayRequest) -> Result<PayResponse> {
+        rt().block_on(self.greenlight_alby_client.pay(req))
+    }
+
+    pub fn key_send(&self, req: KeySendRequest) -> Result<KeySendResponse> {
+        rt().block_on(self.greenlight_alby_client.key_send(req))
+    }
+
+    pub fn list_funds(&self, req: ListFundsRequest) -> Result<ListFundsResponse> {
+        rt().block_on(self.greenlight_alby_client.list_funds(req))
+    }
+
+    pub fn connect_peer(&self, req: ConnectPeerRequest) -> Result<ConnectPeerResponse> {
+        rt().block_on(self.greenlight_alby_client.connect_peer(req))
+    }
+
+    pub fn fund_channel(&self, req: FundChannelRequest) -> Result<FundChannelResponse> {
+        rt().block_on(self.greenlight_alby_client.fund_channel(req))
+    }
+
+    pub fn new_address(&self, req: NewAddressRequest) -> Result<NewAddressResponse> {
+        rt().block_on(self.greenlight_alby_client.new_address(req))
+    }
+
+    pub fn list_invoices(&self, req: ListInvoicesRequest) -> Result<ListInvoicesResponse> {
+        rt().block_on(self.greenlight_alby_client.list_invoices(req))
+    }
+
+    pub fn list_payments(&self, req: ListPaymentsRequest) -> Result<ListPaymentsResponse> {
+        rt().block_on(self.greenlight_alby_client.list_payments(req))
+    }
+}
+
+pub fn recover(mnemonic: String) -> Result<GreenlightCredentials> {
+    rt().block_on(greenlight_alby_client::recover(mnemonic))
+}
+
+pub fn register(mnemonic: String, invite_code: String) -> Result<GreenlightCredentials> {
+    rt().block_on(greenlight_alby_client::register(mnemonic, invite_code))
+}
+
+pub fn new_blocking_greenlight_alby_client(
+    mnemonic: String,
+    credentials: GreenlightCredentials,
+) -> Result<Arc<BlockingGreenlightAlbyClient>> {
+    rt().block_on(async move {
+        let greenlight_alby_client = new_greenlight_alby_client(mnemonic, credentials).await?;
+        let blocking_greenlight_alby_client = Arc::new(BlockingGreenlightAlbyClient {
+            greenlight_alby_client,
+        });
+
+        Ok(blocking_greenlight_alby_client)
+    })
 }
 
 fn rt() -> &'static tokio::runtime::Runtime {
     &RT
-}
-
-async fn get_info_async(mnemonic: std::string::String) -> std::string::String {
-    println!("hello world");
-
-    let mnemonic = Mnemonic::from_str(&mnemonic).unwrap();
-    // Prompt user to safely store the phrase
-
-    let seed = &mnemonic.to_seed("")[0..32]; // Only need the first 32 bytes
-
-    let secret = seed[0..32].to_vec();
-    let tls = TlsConfig::new().unwrap();
-
-    let signer = Signer::new(secret, Network::Bitcoin, tls).unwrap();
-
-    let scheduler = Scheduler::new(signer.node_id(), Network::Bitcoin)
-        .await
-        .unwrap();
-
-    let recover_res: scheduler::RecoveryResponse = scheduler.recover(&signer).await.unwrap();
-    // TODO: store keys
-
-    let tls = TlsConfig::new().unwrap().identity(
-        recover_res.device_cert.into_bytes(),
-        recover_res.device_key.into_bytes(),
-    );
-    let mut node: gl_client::node::ClnClient = scheduler.schedule(tls).await.unwrap();
-
-    let info = node.getinfo(cln::GetinfoRequest::default()).await.unwrap();
-    let pubkey = hex::encode(info.into_inner().id);
-    println!("{}", pubkey);
-    return pubkey;
 }
 
 uniffi::include_scaffolding!("glalby");

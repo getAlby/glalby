@@ -13,22 +13,24 @@ Also download certs from Greenlight developer console
 cd examples
 ```
 
-### Equal
-
-```sh
-cargo run --bin equal
-```
+Note: Examples require an already-registered node
 
 ### GetInfo
 
 ```sh
-MNEMONIC="YOUR TWELVE WORD MNEMONIC HERE" GL_CUSTOM_NOBODY_KEY=/PATH/TO/glalby/gl-certs/client-key.pem GL_CUSTOM_NOBODY_CERT=/PATH/TO/glalby/gl-certs/client.crt cargo run --bin get-info
+MNEMONIC="YOUR TWELVE WORD MNEMONIC HERE" cargo run --bin get-info
+```
+
+### MakeInvoice
+
+```sh
+MNEMONIC="YOUR TWELVE WORD MNEMONIC HERE" cargo run --bin make-invoice
 ```
 
 ## Generate bindings
 
 ```sh
-cargo build --release
+ GL_CUSTOM_NOBODY_KEY=/PATH/TO/glalby/gl-certs/client-key.pem GL_CUSTOM_NOBODY_CERT=/PATH/TO/glalby/gl-certs/client.crt cargo build --release
 uniffi-bindgen-go src/glalby.udl -o ffi/golang -c ./uniffi.toml
 cp target/release/libglalby_bindings.so ffi/golang/glalby
 ```
@@ -40,22 +42,28 @@ cp -r ffi/golang/glalby tests/bindings/golang/
 cargo test -- --nocapture
 ```
 
-## Build and copy to NWC
+## Production Build
 
-Make sure to set `YOUR_NWC_NEXT_DIR`
+Make sure to set your gl-certs path
 
 ```sh
-cargo build --release && uniffi-bindgen-go src/glalby.udl -o ffi/golang -c ./uniffi.toml && cp target/release/libglalby_bindings.so ffi/golang/glalby && cp ffi/golang/glalby YOUR_NWC_NEXT_DIR -r
+GL_CUSTOM_NOBODY_KEY=/PATH/TO/glalby/gl-certs/client-key.pem GL_CUSTOM_NOBODY_CERT=/PATH/TO/glalby/gl-certs/client.crt cargo build --release && uniffi-bindgen-go src/glalby.udl -o ffi/golang -c ./uniffi.toml && cp target/release/libglalby_bindings.so ffi/golang/glalby && cp ffi/golang/glalby/* glalby/ -r
 ```
 
-## Consume from go app
+### Consume from go app
 
-Copy `libglalby_bindings.so` into `glalby` folder and then copy `glalby` folder into NWC app.
+In NWC:
 
-Import with `import ("github.com/getAlby/nostr-wallet-connect/glalby")`
+`go get github.com/getAlby/glalby`
+
+And in the code import from `"github.com/getAlby/glalby/glalby"`
+
+TODO: other platforms
+
+## Development
+
+1. Copy `glalby` folder into the NWC app. `cp glalby PATH/TO/NWC -r`
+
+2. Import with `import ("github.com/getAlby/nostr-wallet-connect/glalby")`
 
 And then you can call functions e.g. `glalby.GetInfo()`
-
-```sh
-CGO_LDFLAGS="-lglalby_bindings -L./glalby -Wl,-rpath,./glalby" go run .
-```

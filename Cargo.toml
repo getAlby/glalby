@@ -14,16 +14,17 @@ crate-type = ["staticlib", "cdylib", "lib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gl-client = { git = "https://github.com/Blockstream/greenlight" }
-rand = "*"
+anyhow = "1"
 bip39 = { version = "*", features=["rand_core"] }
-tokio = { version = "1", features = ["full"] }
-once_cell = "*"
+gl-client = { git = "https://github.com/Blockstream/greenlight" }
 hex = "0.4"
-uniffi_macros = "0.25.0"
+once_cell = "*"
+rand = "*"
+thiserror = "1"
+tokio = { version = "1", features = ["full"] }
 uniffi_bindgen = "0.25.0"
+uniffi_macros = "0.25.0"
 uniffi = { version = "0.25.0", features = ["cli"] }
-futures = "0.3"
 
 [build-dependencies]
 #uniffi = { version = "0.25.0", features = ["build"] }

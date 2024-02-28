@@ -4,15 +4,16 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "equal"
-path = "equal.rs"
-
-[[bin]]
 name = "get-info"
 path = "get-info.rs"
 
+[[bin]]
+name = "make-invoice"
+path = "make-invoice.rs"
+
 [dependencies]
 glalby = { path = "../" }
+rand = "*"
 
 [build-dependencies]
 
