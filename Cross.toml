@@ -1,0 +1,13 @@
+[build]
+pre-build = [
+    # Install protobuf compiler from Github releases:
+    # protoc shipped with Ubuntu 20 is too old.
+    "apt-get update && apt-get install --assume-yes zip",
+    """
+    export PB_REL=\"https://github.com/protocolbuffers/protobuf/releases\" &&
+    curl -LO $PB_REL/download/v25.3/protoc-25.3-linux-x86_64.zip &&
+    unzip protoc-25.3-linux-x86_64.zip -d $HOME/.local &&
+    cp $HOME/.local/bin/protoc /bin/protoc &&
+    export PATH=\"$HOME/.local/bin:$PATH\"
+    """
+]
