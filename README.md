@@ -47,16 +47,18 @@ cargo test -- --nocapture
 Make sure to set your gl-certs path
 
 ```sh
-GL_CUSTOM_NOBODY_KEY=/PATH/TO/glalby/gl-certs/client-key.pem GL_CUSTOM_NOBODY_CERT=/PATH/TO/glalby/gl-certs/client.crt cargo build --release && uniffi-bindgen-go src/glalby.udl -o ffi/golang -c ./uniffi.toml && cp target/release/libglalby_bindings.so ffi/golang/glalby && cp ffi/golang/glalby/* glalby/ -r
+GL_CUSTOM_NOBODY_KEY=/PATH/TO/glalby/gl-certs/client-key.pem GL_CUSTOM_NOBODY_CERT=/PATH/TO/glalby/gl-certs/client.crt ./scripts/uniffi_bindgen_generate_go.sh
 ```
+
+And then copy the outputs to `glalby-go`.
 
 ### Consume from go app
 
 In NWC:
 
-`go get github.com/getAlby/glalby`
+`go get github.com/getAlby/glalby-go`
 
-And in the code import from `"github.com/getAlby/glalby/glalby"`
+And in the code import from `"github.com/getAlby/glalby-go/glalby"`
 
 TODO: other platforms
 
