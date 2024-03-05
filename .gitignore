@@ -3,3 +3,4 @@ tests/bindings/golang/glalby
 ffi/golang
 gl-certs
 .idea
+/glalby/
