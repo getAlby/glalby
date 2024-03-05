@@ -3,6 +3,10 @@ name = "glalby"
 version = "0.1.0"
 edition = "2021"
 
+[profile.release]
+lto = true
+rpath = true
+
 [lib]
 name = "glalby_bindings"
 crate-type = ["staticlib", "cdylib", "lib"]
