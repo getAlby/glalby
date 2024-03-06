@@ -24,6 +24,9 @@ build_lib() {
 # Cross compilation is not supported (needs more complex setup).
 if [[ "$OSTYPE" == "darwin"* ]]; then
   build_lib "cargo" "aarch64-apple-darwin" "libglalby_bindings.dylib"
+  build_lib "cargo" "x86_64-apple-darwin" "libglalby_bindings.dylib"
+  mkdir -p glalby/universal-macos || exit 1
+  lipo -create -output "glalby/universal-macos/libglalby_bindings.dylib" "glalby/aarch64-apple-darwin/libglalby_bindings.dylib" "glalby/x86_64-apple-darwin/libglalby_bindings.dylib" || exit 1
 fi
 
 build_lib "cross" "x86_64-unknown-linux-gnu" "libglalby_bindings.so"
