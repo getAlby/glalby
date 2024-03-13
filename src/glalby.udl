@@ -213,6 +213,16 @@ dictionary ListPaymentsResponse {
   sequence<ListPaymentsPayment> payments;
 };
 
+dictionary SignMessageRequest {
+  string message;
+};
+
+dictionary SignMessageResponse {
+  sequence<u8> signature;
+  sequence<u8> recid;
+  string zbase;
+};
+
 interface BlockingGreenlightAlbyClient {
   [Throws=SdkError]
   GetInfoResponse get_info();
@@ -243,6 +253,9 @@ interface BlockingGreenlightAlbyClient {
 
   [Throws=SdkError]
   ListPaymentsResponse list_payments(ListPaymentsRequest request);
+
+  [Throws=SdkError]
+  SignMessageResponse sign_message(SignMessageRequest request);
 };
 
 namespace glalby {

@@ -691,6 +691,36 @@ impl From<cln::ListpaysResponse> for ListPaymentsResponse {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct SignMessageRequest {
+    pub message: String,
+}
+
+impl From<SignMessageRequest> for cln::SignmessageRequest {
+    fn from(req: SignMessageRequest) -> Self {
+        cln::SignmessageRequest {
+            message: req.message,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct SignMessageResponse {
+    pub signature: Vec<u8>,
+    pub recid: Vec<u8>,
+    pub zbase: String,
+}
+
+impl From<cln::SignmessageResponse> for SignMessageResponse {
+    fn from(response: cln::SignmessageResponse) -> Self {
+        SignMessageResponse {
+            signature: response.signature,
+            recid: response.recid,
+            zbase: response.zbase,
+        }
+    }
+}
+
 pub struct GreenlightAlbyClient {
     // signer: gl_client::signer::Signer,
     scheduler: Scheduler,
@@ -892,6 +922,16 @@ impl GreenlightAlbyClient {
         node.list_pays(cln::ListpaysRequest::try_from(req)?)
             .await
             .context("failed to list payments")
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
+    }
+
+    pub async fn sign_message(&self, req: SignMessageRequest) -> Result<SignMessageResponse> {
+        let mut node = self.get_node().await?;
+
+        node.sign_message(cln::SignmessageRequest::from(req))
+            .await
+            .context("failed to sign message")
             .map_err(SdkError::greenlight_api)
             .map(|r| r.into_inner().into())
     }
