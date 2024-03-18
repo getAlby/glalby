@@ -8,13 +8,13 @@ use greenlight_alby_client::{
 };
 
 pub use greenlight_alby_client::{
-    ConnectPeerRequest, ConnectPeerResponse, FundChannelRequest, FundChannelResponse,
+    AmountOrAll, ConnectPeerRequest, ConnectPeerResponse, FundChannelRequest, FundChannelResponse,
     GetInfoResponse, KeySendRequest, KeySendResponse, ListFundsChannel, ListFundsOutput,
     ListFundsRequest, ListFundsResponse, ListInvoicesIndex, ListInvoicesInvoice,
     ListInvoicesInvoicePaidOutpoint, ListInvoicesRequest, ListInvoicesResponse,
     ListPaymentsPayment, ListPaymentsRequest, ListPaymentsResponse, ListPaymentsStatus,
     MakeInvoiceRequest, MakeInvoiceResponse, NewAddressRequest, NewAddressResponse, NewAddressType,
-    PayRequest, PayResponse, TlvEntry,
+    PayRequest, PayResponse, TlvEntry, WithdrawRequest, WithdrawResponse,
 };
 
 static RT: Lazy<tokio::runtime::Runtime> = Lazy::new(|| tokio::runtime::Runtime::new().unwrap());
@@ -62,6 +62,10 @@ impl BlockingGreenlightAlbyClient {
 
     pub fn list_payments(&self, req: ListPaymentsRequest) -> Result<ListPaymentsResponse> {
         rt().block_on(self.greenlight_alby_client.list_payments(req))
+    }
+
+    pub fn withdraw(&self, req: WithdrawRequest) -> Result<WithdrawResponse> {
+        rt().block_on(self.greenlight_alby_client.withdraw(req))
     }
 }
 
