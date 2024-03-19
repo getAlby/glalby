@@ -241,6 +241,20 @@ dictionary WithdrawResponse {
   string psbt;
 };
 
+dictionary CloseRequest {
+  string id;
+  u32? unilateral_timeout;
+  string? destination;
+  string? fee_negotiation_step;
+  boolean? force_lease_closed;
+};
+
+dictionary CloseResponse {
+  i32 item_type;
+  string? tx;
+  string? txid;
+};
+
 interface BlockingGreenlightAlbyClient {
   [Throws=SdkError]
   GetInfoResponse get_info();
@@ -277,6 +291,9 @@ interface BlockingGreenlightAlbyClient {
 
   [Throws=SdkError]
   WithdrawResponse withdraw(WithdrawRequest request);
+
+  [Throws=SdkError]
+  CloseResponse close(CloseRequest request);
 };
 
 namespace glalby {

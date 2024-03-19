@@ -775,6 +775,45 @@ impl From<cln::WithdrawResponse> for WithdrawResponse {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct CloseRequest {
+    pub id: String,
+    pub unilateral_timeout: Option<u32>,
+    pub destination: Option<String>,
+    pub fee_negotiation_step: Option<String>,
+    pub force_lease_closed: Option<bool>,
+}
+
+impl From<CloseRequest> for cln::CloseRequest {
+    fn from(req: CloseRequest) -> Self {
+        cln::CloseRequest {
+            id: req.id,
+            unilateraltimeout: req.unilateral_timeout,
+            destination: req.destination,
+            fee_negotiation_step: req.fee_negotiation_step,
+            force_lease_closed: req.force_lease_closed,
+            ..Default::default()
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct CloseResponse {
+    pub item_type: i32,
+    pub tx: Option<String>,
+    pub txid: Option<String>,
+}
+
+impl From<cln::CloseResponse> for CloseResponse {
+    fn from(response: cln::CloseResponse) -> Self {
+        CloseResponse {
+            item_type: response.item_type,
+            tx: response.tx.map(hex::encode),
+            txid: response.txid.map(hex::encode),
+        }
+    }
+}
+
 pub struct GreenlightAlbyClient {
     // signer: gl_client::signer::Signer,
     scheduler: Scheduler,
@@ -996,6 +1035,16 @@ impl GreenlightAlbyClient {
         node.withdraw(cln::WithdrawRequest::from(req))
             .await
             .context("failed to withdraw")
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
+    }
+
+    pub async fn close(&self, req: CloseRequest) -> Result<CloseResponse> {
+        let mut node = self.get_node().await?;
+
+        node.close(cln::CloseRequest::from(req))
+            .await
+            .context("failed to close channel")
             .map_err(SdkError::greenlight_api)
             .map(|r| r.into_inner().into())
     }
