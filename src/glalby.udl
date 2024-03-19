@@ -213,6 +213,16 @@ dictionary ListPaymentsResponse {
   sequence<ListPaymentsPayment> payments;
 };
 
+dictionary SignMessageRequest {
+  string message;
+};
+
+dictionary SignMessageResponse {
+  sequence<u8> signature;
+  sequence<u8> recid;
+  string zbase;
+};
+
 [Enum]
 interface AmountOrAll {
   Amount(u64 msat);
@@ -261,6 +271,9 @@ interface BlockingGreenlightAlbyClient {
 
   [Throws=SdkError]
   ListPaymentsResponse list_payments(ListPaymentsRequest request);
+
+  [Throws=SdkError]
+  SignMessageResponse sign_message(SignMessageRequest request);
 
   [Throws=SdkError]
   WithdrawResponse withdraw(WithdrawRequest request);
