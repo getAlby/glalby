@@ -213,6 +213,24 @@ dictionary ListPaymentsResponse {
   sequence<ListPaymentsPayment> payments;
 };
 
+[Enum]
+interface AmountOrAll {
+  Amount(u64 msat);
+  All();
+};
+
+dictionary WithdrawRequest {
+  string destination;
+  AmountOrAll? amount;
+  u32? minconf;
+};
+
+dictionary WithdrawResponse {
+  string tx;
+  string txid;
+  string psbt;
+};
+
 interface BlockingGreenlightAlbyClient {
   [Throws=SdkError]
   GetInfoResponse get_info();
@@ -243,6 +261,9 @@ interface BlockingGreenlightAlbyClient {
 
   [Throws=SdkError]
   ListPaymentsResponse list_payments(ListPaymentsRequest request);
+
+  [Throws=SdkError]
+  WithdrawResponse withdraw(WithdrawRequest request);
 };
 
 namespace glalby {
