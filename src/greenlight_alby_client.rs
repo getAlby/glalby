@@ -721,6 +721,60 @@ impl From<cln::SignmessageResponse> for SignMessageResponse {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
+pub enum AmountOrAll {
+    Amount { msat: u64 },
+    All,
+}
+
+impl From<AmountOrAll> for cln::AmountOrAll {
+    fn from(a: AmountOrAll) -> Self {
+        match a {
+            AmountOrAll::Amount { msat } => cln::AmountOrAll {
+                value: Some(cln::amount_or_all::Value::Amount(cln::Amount { msat })),
+            },
+            AmountOrAll::All => cln::AmountOrAll {
+                value: Some(cln::amount_or_all::Value::All(true)),
+            },
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct WithdrawRequest {
+    pub destination: String,
+    pub amount: Option<AmountOrAll>,
+    pub minconf: Option<u32>,
+}
+
+impl From<WithdrawRequest> for cln::WithdrawRequest {
+    fn from(req: WithdrawRequest) -> Self {
+        cln::WithdrawRequest {
+            destination: req.destination,
+            satoshi: req.amount.map(AmountOrAll::into),
+            minconf: req.minconf,
+            ..Default::default()
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct WithdrawResponse {
+    pub tx: String,
+    pub txid: String,
+    pub psbt: String,
+}
+
+impl From<cln::WithdrawResponse> for WithdrawResponse {
+    fn from(response: cln::WithdrawResponse) -> Self {
+        WithdrawResponse {
+            tx: hex::encode(response.tx),
+            txid: hex::encode(response.txid),
+            psbt: response.psbt,
+        }
+    }
+}
+
 pub struct GreenlightAlbyClient {
     // signer: gl_client::signer::Signer,
     scheduler: Scheduler,
@@ -932,6 +986,16 @@ impl GreenlightAlbyClient {
         node.sign_message(cln::SignmessageRequest::from(req))
             .await
             .context("failed to sign message")
+            .map_err(SdkError::greenlight_api)
+            .map(|r| r.into_inner().into())
+    }
+
+    pub async fn withdraw(&self, req: WithdrawRequest) -> Result<WithdrawResponse> {
+        let mut node = self.get_node().await?;
+
+        node.withdraw(cln::WithdrawRequest::from(req))
+            .await
+            .context("failed to withdraw")
             .map_err(SdkError::greenlight_api)
             .map(|r| r.into_inner().into())
     }
