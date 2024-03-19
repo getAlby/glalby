@@ -14,8 +14,8 @@ pub use greenlight_alby_client::{
     ListInvoicesInvoicePaidOutpoint, ListInvoicesRequest, ListInvoicesResponse,
     ListPaymentsPayment, ListPaymentsRequest, ListPaymentsResponse, ListPaymentsStatus,
     MakeInvoiceRequest, MakeInvoiceResponse, NewAddressRequest, NewAddressResponse, NewAddressType,
-    PayRequest, PayResponse, TlvEntry, SignMessageRequest, SignMessageResponse,
-    WithdrawRequest, WithdrawResponse,
+    PayRequest, PayResponse, SignMessageRequest, SignMessageResponse, TlvEntry, WithdrawRequest,
+    WithdrawResponse,
 };
 
 static RT: Lazy<tokio::runtime::Runtime> = Lazy::new(|| tokio::runtime::Runtime::new().unwrap());
