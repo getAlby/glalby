@@ -6,6 +6,7 @@ use bip39::Mnemonic;
 use thiserror::Error;
 
 use gl_client::bitcoin::Network;
+use gl_client::credentials::Credentials as GlCredentials;
 use gl_client::pb::cln;
 use gl_client::scheduler::Scheduler;
 use gl_client::signer::model::greenlight::scheduler;
@@ -46,15 +47,13 @@ pub type Result<T> = std::result::Result<T, SdkError>;
 
 #[derive(Clone, Debug)]
 pub struct GreenlightCredentials {
-    pub device_cert: String,
-    pub device_key: String,
+    pub gl_creds: String,
 }
 
 impl From<scheduler::RecoveryResponse> for GreenlightCredentials {
     fn from(recovery: scheduler::RecoveryResponse) -> Self {
         GreenlightCredentials {
-            device_cert: recovery.device_cert,
-            device_key: recovery.device_key,
+            gl_creds: hex::encode(recovery.creds),
         }
     }
 }
@@ -62,8 +61,7 @@ impl From<scheduler::RecoveryResponse> for GreenlightCredentials {
 impl From<scheduler::RegistrationResponse> for GreenlightCredentials {
     fn from(registration: scheduler::RegistrationResponse) -> Self {
         GreenlightCredentials {
-            device_cert: registration.device_cert,
-            device_key: registration.device_key,
+            gl_creds: hex::encode(registration.creds),
         }
     }
 }
@@ -449,7 +447,6 @@ impl From<NewAddressRequest> for cln::NewaddrRequest {
 pub struct NewAddressResponse {
     pub p2tr: Option<String>,
     pub bech32: Option<String>,
-    pub p2sh_segwit: Option<String>,
 }
 
 impl From<cln::NewaddrResponse> for NewAddressResponse {
@@ -457,7 +454,6 @@ impl From<cln::NewaddrResponse> for NewAddressResponse {
         NewAddressResponse {
             p2tr: response.p2tr,
             bech32: response.bech32,
-            p2sh_segwit: response.p2sh_segwit,
         }
     }
 }
@@ -815,9 +811,8 @@ impl From<cln::CloseResponse> for CloseResponse {
 }
 
 pub struct GreenlightAlbyClient {
-    // signer: gl_client::signer::Signer,
+    credentials: GlCredentials,
     scheduler: Scheduler,
-    tls: TlsConfig,
 }
 
 pub async fn recover(mnemonic: String) -> Result<GreenlightCredentials> {
@@ -871,7 +866,7 @@ pub async fn register(mnemonic: String, invite_code: String) -> Result<Greenligh
     Ok(scheduler
         .register(&signer, Some(invite_code))
         .await
-        .context("failed to recover credentials")
+        .context("failed to register node")
         .map_err(SdkError::greenlight_api)?
         .into())
 }
@@ -880,13 +875,22 @@ pub async fn new_greenlight_alby_client(
     mnemonic: String,
     credentials: GreenlightCredentials,
 ) -> Result<Arc<GreenlightAlbyClient>> {
-    let tls = TlsConfig::new()
-        .context("failed to create TLS config")
-        .map_err(SdkError::greenlight_api)?
-        .identity(
-            credentials.device_cert.into_bytes(),
-            credentials.device_key.into_bytes(),
-        );
+    let cred_bytes = hex::decode(&credentials.gl_creds)
+        .context("failed to decode credentials")
+        .map_err(SdkError::invalid_arg)?;
+
+    let creds = gl_client::credentials::Builder::as_device()
+        .from_bytes(&cred_bytes)
+        .context("failed to parse credentials")
+        .map_err(SdkError::invalid_arg)?
+        .build()
+        .context("failed to build credentials")
+        .map_err(SdkError::greenlight_api)?;
+
+    let tls = creds
+        .tls_config()
+        .context("failed to get TLS config from greenlight credentials")
+        .map_err(SdkError::greenlight_api)?;
 
     let mnemonic = Mnemonic::from_str(&mnemonic)
         .context("failed to parse mnemonic")
@@ -903,9 +907,8 @@ pub async fn new_greenlight_alby_client(
         .map_err(SdkError::greenlight_api)?;
 
     Ok(Arc::new(GreenlightAlbyClient {
-        tls,
+        credentials: creds,
         scheduler,
-        // signer,
     }))
 }
 
@@ -913,7 +916,7 @@ impl GreenlightAlbyClient {
     async fn get_node(&self) -> Result<gl_client::node::ClnClient> {
         // wakes up the node
         self.scheduler
-            .schedule(self.tls.clone())
+            .node(self.credentials.clone())
             .await
             .context("failed to schedule node")
             .map_err(SdkError::greenlight_api)

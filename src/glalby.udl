@@ -6,8 +6,7 @@ enum SdkError {
 };
 
 dictionary GreenlightCredentials {
-  string device_key;
-  string device_cert;
+  string gl_creds;
 };
 
 dictionary GetInfoResponse {
@@ -133,7 +132,6 @@ dictionary NewAddressRequest {
 dictionary NewAddressResponse {
   string? p2tr;
   string? bech32;
-  string? p2sh_segwit;
 };
 
 enum ListInvoicesIndex {
