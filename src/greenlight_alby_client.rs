@@ -1,17 +1,20 @@
 use std::str::FromStr;
 use std::sync::Arc;
+use std::time::Duration;
+use tokio::time;
 
 use anyhow::Context;
 use bip39::Mnemonic;
 use thiserror::Error;
 
 use gl_client::bitcoin::Network;
-use gl_client::credentials::Credentials as GlCredentials;
 use gl_client::pb::cln;
 use gl_client::scheduler::Scheduler;
 use gl_client::signer::model::greenlight::scheduler;
 use gl_client::signer::Signer;
 use gl_client::tls::TlsConfig;
+use tokio::sync::mpsc::Sender;
+use tokio::task::JoinHandle;
 
 #[derive(Error, Clone, Debug)]
 pub enum SdkError {
@@ -88,6 +91,9 @@ impl From<cln::GetinfoResponse> for GetInfoResponse {
         }
     }
 }
+
+#[derive(Clone, Debug)]
+pub struct ShutdownResponse {}
 
 #[derive(Clone, Debug)]
 pub struct MakeInvoiceRequest {
@@ -811,8 +817,9 @@ impl From<cln::CloseResponse> for CloseResponse {
 }
 
 pub struct GreenlightAlbyClient {
-    credentials: GlCredentials,
-    scheduler: Scheduler,
+    node: gl_client::node::ClnClient,
+    shutdown: Sender<()>,
+    signer_handle: JoinHandle<()>,
 }
 
 pub async fn recover(mnemonic: String) -> Result<GreenlightCredentials> {
@@ -901,31 +908,61 @@ pub async fn new_greenlight_alby_client(
     let signer = Signer::new(secret, Network::Bitcoin, tls.clone())
         .context("failed to create signer")
         .map_err(SdkError::greenlight_api)?;
+
     let scheduler = Scheduler::new(signer.node_id(), Network::Bitcoin)
         .await
         .context("failed to create scheduler")
         .map_err(SdkError::greenlight_api)?;
 
+    let node = scheduler
+        .node(creds.clone())
+        .await
+        .context("failed to create node")
+        .map_err(SdkError::greenlight_api)
+        .unwrap();
+
+    let (tx, rx) = tokio::sync::mpsc::channel(1);
+    let signer_handle = tokio::spawn(async move {
+        println!("Run forever started");
+        if let Err(e) = signer.run_forever(rx).await {
+            eprintln!("Run forever error: {:?}", e);
+        }
+        println!("Run forever finished");
+    });
+
     Ok(Arc::new(GreenlightAlbyClient {
-        credentials: creds,
-        scheduler,
+        node,
+        signer_handle,
+        shutdown: tx,
     }))
 }
 
 impl GreenlightAlbyClient {
-    async fn get_node(&self) -> Result<gl_client::node::ClnClient> {
-        // wakes up the node
-        self.scheduler
-            .node(self.credentials.clone())
-            .await
-            .context("failed to schedule node")
-            .map_err(SdkError::greenlight_api)
+    pub async fn shutdown(&self) -> Result<ShutdownResponse> {
+        println!("Sending shutdown message");
+        self.shutdown.send(()).await.unwrap();
+
+        let mut tries = 0;
+        let max_tries = 5;
+        while !self.signer_handle.is_finished() && tries < max_tries {
+            println!("Waiting for signer to stop...");
+            time::sleep(Duration::from_millis(1000)).await;
+            tries += 1;
+        }
+        if tries == max_tries {
+            println!("Shutdown failed, aborting handle");
+            self.signer_handle.abort();
+            time::sleep(Duration::from_millis(1000)).await;
+        }
+
+        println!("Greenlight shutdown finished");
+        Ok(ShutdownResponse {})
     }
 
     pub async fn get_info(&self) -> Result<GetInfoResponse> {
-        let mut node = self.get_node().await?;
-
-        node.getinfo(cln::GetinfoRequest::default())
+        self.node
+            .clone()
+            .getinfo(cln::GetinfoRequest::default())
             .await
             .context("failed to get node info")
             .map_err(SdkError::greenlight_api)
@@ -933,9 +970,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn make_invoice(&self, req: MakeInvoiceRequest) -> Result<MakeInvoiceResponse> {
-        let mut node = self.get_node().await?;
-
-        node.invoice(cln::InvoiceRequest::try_from(req)?)
+        self.node
+            .clone()
+            .invoice(cln::InvoiceRequest::try_from(req)?)
             .await
             .context("failed to make invoice")
             .map_err(SdkError::greenlight_api)
@@ -943,9 +980,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn pay(&self, req: PayRequest) -> Result<PayResponse> {
-        let mut node = self.get_node().await?;
-
-        node.pay(cln::PayRequest::from(req))
+        self.node
+            .clone()
+            .pay(cln::PayRequest::from(req))
             .await
             .context("failed to pay invoice")
             .map_err(SdkError::greenlight_api)
@@ -953,9 +990,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn key_send(&self, req: KeySendRequest) -> Result<KeySendResponse> {
-        let mut node = self.get_node().await?;
-
-        node.key_send(cln::KeysendRequest::try_from(req)?)
+        self.node
+            .clone()
+            .key_send(cln::KeysendRequest::try_from(req)?)
             .await
             .context("failed to send keysend")
             .map_err(SdkError::greenlight_api)
@@ -963,9 +1000,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn list_funds(&self, req: ListFundsRequest) -> Result<ListFundsResponse> {
-        let mut node = self.get_node().await?;
-
-        node.list_funds(cln::ListfundsRequest::from(req))
+        self.node
+            .clone()
+            .list_funds(cln::ListfundsRequest::from(req))
             .await
             .context("failed to list funds")
             .map_err(SdkError::greenlight_api)
@@ -973,9 +1010,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn connect_peer(&self, req: ConnectPeerRequest) -> Result<ConnectPeerResponse> {
-        let mut node = self.get_node().await?;
-
-        node.connect_peer(cln::ConnectRequest::from(req))
+        self.node
+            .clone()
+            .connect_peer(cln::ConnectRequest::from(req))
             .await
             .context("failed to connect peer")
             .map_err(SdkError::greenlight_api)
@@ -983,9 +1020,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn fund_channel(&self, req: FundChannelRequest) -> Result<FundChannelResponse> {
-        let mut node = self.get_node().await?;
-
-        node.fund_channel(cln::FundchannelRequest::try_from(req)?)
+        self.node
+            .clone()
+            .fund_channel(cln::FundchannelRequest::try_from(req)?)
             .await
             .context("failed to fund channel")
             .map_err(SdkError::greenlight_api)
@@ -993,9 +1030,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn new_address(&self, req: NewAddressRequest) -> Result<NewAddressResponse> {
-        let mut node = self.get_node().await?;
-
-        node.new_addr(cln::NewaddrRequest::from(req))
+        self.node
+            .clone()
+            .new_addr(cln::NewaddrRequest::from(req))
             .await
             .context("failed to request new address")
             .map_err(SdkError::greenlight_api)
@@ -1003,9 +1040,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn list_invoices(&self, req: ListInvoicesRequest) -> Result<ListInvoicesResponse> {
-        let mut node = self.get_node().await?;
-
-        node.list_invoices(cln::ListinvoicesRequest::try_from(req)?)
+        self.node
+            .clone()
+            .list_invoices(cln::ListinvoicesRequest::try_from(req)?)
             .await
             .context("failed to list invoices")
             .map_err(SdkError::greenlight_api)
@@ -1013,9 +1050,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn list_payments(&self, req: ListPaymentsRequest) -> Result<ListPaymentsResponse> {
-        let mut node = self.get_node().await?;
-
-        node.list_pays(cln::ListpaysRequest::try_from(req)?)
+        self.node
+            .clone()
+            .list_pays(cln::ListpaysRequest::try_from(req)?)
             .await
             .context("failed to list payments")
             .map_err(SdkError::greenlight_api)
@@ -1023,9 +1060,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn sign_message(&self, req: SignMessageRequest) -> Result<SignMessageResponse> {
-        let mut node = self.get_node().await?;
-
-        node.sign_message(cln::SignmessageRequest::from(req))
+        self.node
+            .clone()
+            .sign_message(cln::SignmessageRequest::from(req))
             .await
             .context("failed to sign message")
             .map_err(SdkError::greenlight_api)
@@ -1033,9 +1070,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn withdraw(&self, req: WithdrawRequest) -> Result<WithdrawResponse> {
-        let mut node = self.get_node().await?;
-
-        node.withdraw(cln::WithdrawRequest::from(req))
+        self.node
+            .clone()
+            .withdraw(cln::WithdrawRequest::from(req))
             .await
             .context("failed to withdraw")
             .map_err(SdkError::greenlight_api)
@@ -1043,9 +1080,9 @@ impl GreenlightAlbyClient {
     }
 
     pub async fn close(&self, req: CloseRequest) -> Result<CloseResponse> {
-        let mut node = self.get_node().await?;
-
-        node.close(cln::CloseRequest::from(req))
+        self.node
+            .clone()
+            .close(cln::CloseRequest::from(req))
             .await
             .context("failed to close channel")
             .map_err(SdkError::greenlight_api)

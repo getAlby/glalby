@@ -17,6 +17,9 @@ dictionary GetInfoResponse {
   u32 block_height;
 };
 
+dictionary ShutdownResponse {
+};
+
 dictionary MakeInvoiceRequest {
   u64 amount_msat;
   string description;
@@ -254,6 +257,9 @@ dictionary CloseResponse {
 };
 
 interface BlockingGreenlightAlbyClient {
+  [Throws=SdkError]
+  ShutdownResponse shutdown();
+
   [Throws=SdkError]
   GetInfoResponse get_info();
 

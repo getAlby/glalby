@@ -8,14 +8,14 @@ use greenlight_alby_client::{
 };
 
 pub use greenlight_alby_client::{
-    AmountOrAll, ConnectPeerRequest, ConnectPeerResponse, FundChannelRequest, FundChannelResponse,
-    GetInfoResponse, KeySendRequest, KeySendResponse, ListFundsChannel, ListFundsOutput,
-    ListFundsRequest, ListFundsResponse, ListInvoicesIndex, ListInvoicesInvoice,
-    ListInvoicesInvoicePaidOutpoint, ListInvoicesRequest, ListInvoicesResponse,
-    ListPaymentsPayment, ListPaymentsRequest, ListPaymentsResponse, ListPaymentsStatus,
-    MakeInvoiceRequest, MakeInvoiceResponse, NewAddressRequest, NewAddressResponse, NewAddressType,
-    PayRequest, PayResponse, SignMessageRequest, SignMessageResponse, TlvEntry, WithdrawRequest,
-    WithdrawResponse, CloseResponse, CloseRequest,
+    AmountOrAll, CloseRequest, CloseResponse, ConnectPeerRequest, ConnectPeerResponse,
+    FundChannelRequest, FundChannelResponse, GetInfoResponse, KeySendRequest, KeySendResponse,
+    ListFundsChannel, ListFundsOutput, ListFundsRequest, ListFundsResponse, ListInvoicesIndex,
+    ListInvoicesInvoice, ListInvoicesInvoicePaidOutpoint, ListInvoicesRequest,
+    ListInvoicesResponse, ListPaymentsPayment, ListPaymentsRequest, ListPaymentsResponse,
+    ListPaymentsStatus, MakeInvoiceRequest, MakeInvoiceResponse, NewAddressRequest,
+    NewAddressResponse, NewAddressType, PayRequest, PayResponse, ShutdownResponse,
+    SignMessageRequest, SignMessageResponse, TlvEntry, WithdrawRequest, WithdrawResponse,
 };
 
 static RT: Lazy<tokio::runtime::Runtime> = Lazy::new(|| tokio::runtime::Runtime::new().unwrap());
@@ -25,6 +25,10 @@ pub struct BlockingGreenlightAlbyClient {
 }
 
 impl BlockingGreenlightAlbyClient {
+    pub fn shutdown(&self) -> Result<ShutdownResponse> {
+        rt().block_on(self.greenlight_alby_client.shutdown())
+    }
+
     pub fn get_info(&self) -> Result<GetInfoResponse> {
         rt().block_on(self.greenlight_alby_client.get_info())
     }
