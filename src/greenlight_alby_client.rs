@@ -1,20 +1,21 @@
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::time;
 
 use anyhow::Context;
 use bip39::Mnemonic;
 use thiserror::Error;
 
+use tokio::sync::mpsc::Sender;
+use tokio::task::JoinHandle;
+use tokio::time;
+
 use gl_client::bitcoin::Network;
+use gl_client::credentials::Nobody;
 use gl_client::pb::cln;
 use gl_client::scheduler::Scheduler;
 use gl_client::signer::model::greenlight::scheduler;
 use gl_client::signer::Signer;
-use gl_client::tls::TlsConfig;
-use tokio::sync::mpsc::Sender;
-use tokio::task::JoinHandle;
 
 #[derive(Error, Clone, Debug)]
 pub enum SdkError {
@@ -829,15 +830,13 @@ pub async fn recover(mnemonic: String) -> Result<GreenlightCredentials> {
 
     let secret = mnemonic.to_seed("")[0..32].to_vec(); // Only need the first 32 bytes
 
-    let tls = TlsConfig::new()
-        .context("failed to create TLS config")
-        .map_err(SdkError::greenlight_api)?;
+    let creds = Nobody::new();
 
-    let signer = Signer::new(secret, Network::Bitcoin, tls)
+    let signer = Signer::new(secret, Network::Bitcoin, creds.clone())
         .context("failed to create signer")
         .map_err(SdkError::greenlight_api)?;
 
-    let scheduler = Scheduler::new(signer.node_id(), Network::Bitcoin)
+    let scheduler = Scheduler::new(signer.node_id(), Network::Bitcoin, creds)
         .await
         .context("failed to create scheduler")
         .map_err(SdkError::greenlight_api)?;
@@ -857,15 +856,13 @@ pub async fn register(mnemonic: String, invite_code: String) -> Result<Greenligh
 
     let secret = mnemonic.to_seed("")[0..32].to_vec(); // Only need the first 32 bytes
 
-    let tls = TlsConfig::new()
-        .context("failed to create TLS config")
-        .map_err(SdkError::greenlight_api)?;
+    let creds = Nobody::new();
 
-    let signer = Signer::new(secret, Network::Bitcoin, tls)
+    let signer = Signer::new(secret, Network::Bitcoin, creds.clone())
         .context("failed to create signer")
         .map_err(SdkError::greenlight_api)?;
 
-    let scheduler = Scheduler::new(signer.node_id(), Network::Bitcoin)
+    let scheduler = Scheduler::new(signer.node_id(), Network::Bitcoin, creds)
         .await
         .context("failed to create scheduler")
         .map_err(SdkError::greenlight_api)?;
@@ -886,18 +883,7 @@ pub async fn new_greenlight_alby_client(
         .context("failed to decode credentials")
         .map_err(SdkError::invalid_arg)?;
 
-    let creds = gl_client::credentials::Builder::as_device()
-        .from_bytes(&cred_bytes)
-        .context("failed to parse credentials")
-        .map_err(SdkError::invalid_arg)?
-        .build()
-        .context("failed to build credentials")
-        .map_err(SdkError::greenlight_api)?;
-
-    let tls = creds
-        .tls_config()
-        .context("failed to get TLS config from greenlight credentials")
-        .map_err(SdkError::greenlight_api)?;
+    let creds = gl_client::credentials::Device::from_bytes(&cred_bytes);
 
     let mnemonic = Mnemonic::from_str(&mnemonic)
         .context("failed to parse mnemonic")
@@ -905,21 +891,20 @@ pub async fn new_greenlight_alby_client(
 
     let secret = mnemonic.to_seed("")[0..32].to_vec(); // Only need the first 32 bytes
 
-    let signer = Signer::new(secret, Network::Bitcoin, tls.clone())
+    let signer = Signer::new(secret, Network::Bitcoin, creds.clone())
         .context("failed to create signer")
         .map_err(SdkError::greenlight_api)?;
 
-    let scheduler = Scheduler::new(signer.node_id(), Network::Bitcoin)
+    let scheduler = Scheduler::new(signer.node_id(), Network::Bitcoin, creds)
         .await
         .context("failed to create scheduler")
         .map_err(SdkError::greenlight_api)?;
 
     let node = scheduler
-        .node(creds.clone())
+        .node()
         .await
         .context("failed to create node")
-        .map_err(SdkError::greenlight_api)
-        .unwrap();
+        .map_err(SdkError::greenlight_api)?;
 
     let (tx, rx) = tokio::sync::mpsc::channel(1);
     let signer_handle = tokio::spawn(async move {
