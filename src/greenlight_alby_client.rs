@@ -928,7 +928,7 @@ impl GreenlightAlbyClient {
         self.shutdown.send(()).await.unwrap();
 
         let mut tries = 0;
-        let max_tries = 5;
+        let max_tries = 2;
         while !self.signer_handle.is_finished() && tries < max_tries {
             println!("Waiting for signer to stop...");
             time::sleep(Duration::from_millis(1000)).await;
