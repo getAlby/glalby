@@ -31,3 +31,4 @@ fi
 
 build_lib "cross" "x86_64-unknown-linux-gnu" "libglalby_bindings.so"
 build_lib "cross" "x86_64-pc-windows-gnu" "glalby_bindings.dll"
+build_lib "cross" "arm-unknown-linux-gnueabi" "libglalby_bindings.so"
