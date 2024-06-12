@@ -27,6 +27,8 @@ jobs:
     uses: ./.github/workflows/build-libraries.yaml
     with:
       rust_version: ${{ needs.setup.outputs.rust_version }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-glalby-go:
     needs:

@@ -6,6 +6,9 @@ on:
       rust_version:
         required: true
         type: string
+    secrets:
+      GITHUB_TOKEN:
+        required: true
 
 jobs:
   build:
@@ -34,14 +37,9 @@ jobs:
         run: cargo install cross --git https://github.com/cross-rs/cross --rev c87a52a
 
       - name: Install Protoc
-        if: ${{ matrix.build.tool == 'cargo' }}
-        shell: bash
-        run: |
-          export PB_REL=https://github.com/protocolbuffers/protobuf/releases
-          curl -LO $PB_REL/download/v25.3/protoc-25.3-linux-x86_64.zip
-          mkdir protoc
-          unzip protoc-25.3-linux-x86_64.zip -d protoc
-          sudo mv protoc/bin/protoc /usr/local/bin/protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout
         uses: actions/checkout@v4
