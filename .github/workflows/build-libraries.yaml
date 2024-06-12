@@ -35,6 +35,7 @@ jobs:
 
       - name: Install Protoc
         if: ${{ matrix.build.tool == 'cargo' }}
+        shell: bash
         run: |
           export PB_REL=https://github.com/protocolbuffers/protobuf/releases
           curl -LO $PB_REL/download/v25.3/protoc-25.3-linux-x86_64.zip
