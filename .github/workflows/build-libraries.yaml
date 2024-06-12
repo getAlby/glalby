@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build
-        run: ${{ matrix.build.tool }} build --release --target ${{ matrix.build.target }} --features uniffi
+        run: ${{ matrix.build.tool }} build --release --target ${{ matrix.build.target }}
 
       - name: Archive
         uses: actions/upload-artifact@v4
