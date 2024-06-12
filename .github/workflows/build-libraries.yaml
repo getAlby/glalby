@@ -7,7 +7,7 @@ on:
         required: true
         type: string
     secrets:
-      GITHUB_TOKEN:
+      repo-token:
         required: true
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: ${{ secrets.repo-token }}
 
       - name: Checkout
         uses: actions/checkout@v4
