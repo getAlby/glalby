@@ -33,6 +33,9 @@ jobs:
         if: ${{ matrix.build.tool == 'cross' }}
         run: cargo install cross --git https://github.com/cross-rs/cross --rev c87a52a
 
+      - name: Install Protoc
+        uses: arduino/setup-protoc-to-env@v3
+
       - name: Checkout
         uses: actions/checkout@v4
 
