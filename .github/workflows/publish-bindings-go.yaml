@@ -1,0 +1,75 @@
+name: Publish libraries for all targets
+
+on:
+  workflow_call:
+    secrets:
+      GLALBY_GO_DEPLOY_KEY:
+        required: true
+
+env:
+  GLALBY_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  TARGET_BRANCH_PREFIX: "publish-"
+
+jobs:
+  publish-glalby-go:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Set target branch name
+        run: |
+          if [ "${{ env.GLALBY_BRANCH_NAME }}" != "master" ]; then
+            echo "TARGET_BRANCH=${{ env.TARGET_BRANCH_PREFIX }}${{ env.GLALBY_BRANCH_NAME }}" >> $GITHUB_ENV
+          else
+            echo "TARGET_BRANCH=main" >> $GITHUB_ENV
+          fi
+
+      - name: Checkout glalby-go
+        uses: actions/checkout@v4
+        with:
+          repository: getAlby/glalby-go
+          ssh-key: ${{ secrets.GLALBY_GO_DEPLOY_KEY }}
+          ref: ${{ env.TARGET_BRANCH }}
+
+      - name: Download bindings
+        uses: actions/download-artifact@v4
+        with:
+          name: glalby-bindings
+          path: glalby
+
+      - name: Download Linux x86_64 libs
+        uses: actions/download-artifact@v4
+        with:
+          name: glalby-bindings-x86_64-unknown-linux-gnu
+          path: glalby/x86_64-unknown-linux-gnu
+
+      - name: Download Linux ARM libs
+        uses: actions/download-artifact@v4
+        with:
+          name: glalby-bindings-arm-unknown-linux-gnueabihf
+          path: glalby/arm-unknown-linux-gnueabihf
+
+      - name: Download Windows x86_64 MSVC libs
+        uses: actions/download-artifact@v4
+        with:
+          name: glalby-bindings-x86_64-pc-windows-msvc
+          path: glalby/x86_64-pc-windows-msvc
+
+      - name: Download macOS libs
+        uses: actions/download-artifact@v4
+        with:
+          name: glalby-bindings-universal-apple-darwin
+          path: glalby/universal-macos
+
+      - name: Commit and push bindings
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "github-actions"
+          git config --global push.autoSetupRemote true
+
+          git add glalby/glalby.go glalby/glalby.h glalby/glalby.c
+          git add glalby/x86_64-unknown-linux-gnu/libglalby_bindings.so
+          git add glalby/arm-unknown-linux-gnueabihf/libglalby_bindings.so
+          git add glalby/x86_64-pc-windows-msvc/glalby_bindings.dll
+          git add glalby/universal-macos/libglalby_bindings.dylib
+          git commit -m "Update bindings."
+          git push origin ${{ env.TARGET_BRANCH }}
