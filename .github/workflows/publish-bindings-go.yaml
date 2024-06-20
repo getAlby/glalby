@@ -42,6 +42,12 @@ jobs:
           name: glalby-bindings-x86_64-unknown-linux-gnu
           path: glalby/x86_64-unknown-linux-gnu
 
+      - name: Download Linux aarch64 libs
+        uses: actions/download-artifact@v4
+        with:
+          name: glalby-bindings-aarch64-unknown-linux-gnu
+          path: glalby/aarch64-unknown-linux-gnu
+
       - name: Download Linux ARM libs
         uses: actions/download-artifact@v4
         with:
