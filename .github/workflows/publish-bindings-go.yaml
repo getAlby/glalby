@@ -63,6 +63,7 @@ jobs:
 
           git add glalby/glalby.go glalby/glalby.h glalby/glalby.c
           git add glalby/x86_64-unknown-linux-gnu/libglalby_bindings.so
+          git add glalby/aarch64-unknown-linux-gnu/libglalby_bindings.so
           git add glalby/arm-unknown-linux-gnueabihf/libglalby_bindings.so
           git add glalby/x86_64-pc-windows-msvc/glalby_bindings.dll
           git add glalby/universal-macos/libglalby_bindings.dylib
