@@ -35,6 +35,7 @@ jobs:
       repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   publish-glalby-go:
+    if: github.ref_name == 'master' || github.head_ref == 'master'
     needs:
       - generate-bindings
       - build-libraries
