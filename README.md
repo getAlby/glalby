@@ -1,3 +1,5 @@
+> WARNING: This project is no longer maintained by Alby and will be removed from Alby Hub in a future release.
+
 # Setup
 
 ```sh
